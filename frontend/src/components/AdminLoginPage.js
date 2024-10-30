@@ -13,7 +13,7 @@ const AdminLoginPage = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/admin/login",
+        "https://parking-lot-management-system-uok2.onrender.com/api/admin/login",
         {
           username,
           password,
