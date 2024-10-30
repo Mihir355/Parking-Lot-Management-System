@@ -19,7 +19,7 @@ const AvailableSlotsPage = () => {
       if (vehicleType) {
         try {
           const response = await axios.get(
-            `http://localhost:5000/api/user/available-slots/${vehicleType}`
+            `https://parking-lot-management-system-uok2.onrender.com/api/user/available-slots/${vehicleType}`
           );
           setSlots(response.data);
         } catch (error) {
@@ -44,7 +44,7 @@ const AvailableSlotsPage = () => {
     const { lotId, phoneNumber } = bookingInfo;
 
     try {
-      await axios.post("http://localhost:5000/api/user/book-slot", {
+      await axios.post("https://parking-lot-management-system-uok2.onrender.com/api/user/book-slot", {
         lotId,
         phoneNumber,
       });
