@@ -16,12 +16,12 @@ const AdminDashboard = () => {
     const fetchData = async () => {
       try {
         const slotsResponse = await axios.get(
-          "http://localhost:5000/api/admin/available-slots"
+          "https://parking-lot-management-system-uok2.onrender.com/api/admin/available-slots"
         );
         setAvailableSlots(slotsResponse.data);
 
         const pricesResponse = await axios.get(
-          "http://localhost:5000/api/admin/prices"
+          "https://parking-lot-management-system-uok2.onrender.com/api/admin/prices"
         );
         setPrices(pricesResponse.data);
       } catch (error) {
@@ -39,7 +39,7 @@ const AdminDashboard = () => {
   const handleAddSlots = async () => {
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/admin/add-slots",
+        "https://parking-lot-management-system-uok2.onrender.com/api/admin/add-slots",
         {
           vehicleType,
           slotCount: parseInt(slotCount),
@@ -58,7 +58,7 @@ const AdminDashboard = () => {
   const handleUpdatePrices = async () => {
     try {
       const response = await axios.put(
-        "http://localhost:5000/api/admin/update-prices",
+        "https://parking-lot-management-system-uok2.onrender.com/api/admin/update-prices",
         updatedPrices
       );
       setPrices(response.data.updatedPrices);
