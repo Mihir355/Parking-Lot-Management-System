@@ -13,7 +13,7 @@ const AdminLoginPage = () => {
 
     try {
       const response = await axios.post(
-        "https://parking-lot-management-system-k103.onrender.com/api/admin/login",
+        "https://parking-lot-management-system-backend-7462.onrender.com/api/admin/login",
         {
           username,
           password,
