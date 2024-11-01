@@ -10,6 +10,7 @@ const AdminDashboard = () => {
   const [slotCount, setSlotCount] = useState("");
   const [prices, setPrices] = useState([]);
   const [updatedPrices, setUpdatedPrices] = useState({});
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -69,20 +70,29 @@ const AdminDashboard = () => {
     }
   };
 
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
   return (
     <div className="admin-dashboard-container">
       <nav className="navbar">
         <h2>Admin Panel</h2>
-        <ul>
+        <button className="navbar-toggle" onClick={toggleMenu}>
+          ☰
+        </button>
+        <ul className={isMenuOpen ? "show" : ""}>
           <li onClick={() => setSelectedOption("home")}>Home</li>
           <li onClick={() => setSelectedOption("add-slots")}>Add Slots</li>
           <li onClick={() => setSelectedOption("change-rates")}>
             Change Rates
           </li>
+          <li>
+            <button onClick={handleLogout} className="logout-button">
+              Log Out
+            </button>
+          </li>
         </ul>
-        <button onClick={handleLogout} className="logout-button">
-          Log Out
-        </button>
       </nav>
       <div className="content">
         {selectedOption === "home" && (

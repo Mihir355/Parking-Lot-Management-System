@@ -26,6 +26,20 @@ router.post("/book-slot", async (req, res) => {
   session.startTransaction();
 
   try {
+    const activeTicket = await Ticket.findOne({
+      phoneNumber,
+      endTime: { $exists: false },
+    });
+
+    if (activeTicket) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(400).json({
+        error:
+          "You already have an active booking. Please check out before booking a new slot.",
+      });
+    }
+
     const lot = await LotModel.findOneAndUpdate(
       { lotId, availabilityStatus: "available" },
       { availabilityStatus: "occupied" },
