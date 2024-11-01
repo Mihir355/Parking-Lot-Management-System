@@ -10,18 +10,19 @@ const AdminDashboard = () => {
   const [slotCount, setSlotCount] = useState("");
   const [prices, setPrices] = useState([]);
   const [updatedPrices, setUpdatedPrices] = useState({});
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const slotsResponse = await axios.get(
-          "https://parking-lot-management-system-15vn.onrender.com/api/admin/available-slots"
+          "http://localhost:5000/api/admin/available-slots"
         );
         setAvailableSlots(slotsResponse.data);
 
         const pricesResponse = await axios.get(
-          "https://parking-lot-management-system-15vn.onrender.com/api/admin/prices"
+          "http://localhost:5000/api/admin/prices"
         );
         setPrices(pricesResponse.data);
       } catch (error) {
@@ -39,7 +40,7 @@ const AdminDashboard = () => {
   const handleAddSlots = async () => {
     try {
       const response = await axios.post(
-        "https://parking-lot-management-system-15vn.onrender.com/api/admin/add-slots",
+        "http://localhost:5000/api/admin/add-slots",
         {
           vehicleType,
           slotCount: parseInt(slotCount),
@@ -58,7 +59,7 @@ const AdminDashboard = () => {
   const handleUpdatePrices = async () => {
     try {
       const response = await axios.put(
-        "https://parking-lot-management-system-15vn.onrender.com/api/admin/update-prices",
+        "http://localhost:5000/api/admin/update-prices",
         updatedPrices
       );
       setPrices(response.data.updatedPrices);
@@ -69,20 +70,29 @@ const AdminDashboard = () => {
     }
   };
 
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
   return (
     <div className="admin-dashboard-container">
       <nav className="navbar">
         <h2>Admin Panel</h2>
-        <ul>
+        <button className="navbar-toggle" onClick={toggleMenu}>
+          ☰
+        </button>
+        <ul className={isMenuOpen ? "show" : ""}>
           <li onClick={() => setSelectedOption("home")}>Home</li>
           <li onClick={() => setSelectedOption("add-slots")}>Add Slots</li>
           <li onClick={() => setSelectedOption("change-rates")}>
             Change Rates
           </li>
+          <li>
+            <button onClick={handleLogout} className="logout-button">
+              Log Out
+            </button>
+          </li>
         </ul>
-        <button onClick={handleLogout} className="logout-button">
-          Log Out
-        </button>
       </nav>
       <div className="content">
         {selectedOption === "home" && (
