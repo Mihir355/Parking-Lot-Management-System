@@ -17,12 +17,12 @@ const AdminDashboard = () => {
     const fetchData = async () => {
       try {
         const slotsResponse = await axios.get(
-          "https://parking-lot-management-system-backend-c28e.onrender.com/api/admin/available-slots"
+          "https://parking-lot-management-system-backend-5dsl.onrender.com/api/admin/available-slots"
         );
         setAvailableSlots(slotsResponse.data);
 
         const pricesResponse = await axios.get(
-          "https://parking-lot-management-system-backend-c28e.onrender.com/api/admin/prices"
+          "https://parking-lot-management-system-backend-5dsl.onrender.com/api/admin/prices"
         );
         setPrices(pricesResponse.data);
       } catch (error) {
@@ -40,7 +40,7 @@ const AdminDashboard = () => {
   const handleAddSlots = async () => {
     try {
       const response = await axios.post(
-        "https://parking-lot-management-system-backend-c28e.onrender.com/api/admin/add-slots",
+        "https://parking-lot-management-system-backend-5dsl.onrender.com/api/admin/add-slots",
         {
           vehicleType,
           slotCount: parseInt(slotCount),
@@ -59,7 +59,7 @@ const AdminDashboard = () => {
   const handleUpdatePrices = async () => {
     try {
       const response = await axios.put(
-        "https://parking-lot-management-system-backend-c28e.onrender.com/api/admin/update-prices",
+        "https://parking-lot-management-system-backend-5dsl.onrender.com/api/admin/update-prices",
         updatedPrices
       );
       setPrices(response.data.updatedPrices);
