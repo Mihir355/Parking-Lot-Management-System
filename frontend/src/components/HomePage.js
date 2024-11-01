@@ -67,7 +67,7 @@ const Homepage = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/otp/send-otp",
+        "https://parking-lot-management-system-k103.onrender.com/api/otp/send-otp",
         {
           phoneNumber,
           lotId,
@@ -89,7 +89,7 @@ const Homepage = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/otp/verify-otp",
+        "https://parking-lot-management-system-k103.onrender.com/api/otp/verify-otp",
         {
           phoneNumber,
           lotId,
@@ -115,7 +115,7 @@ const Homepage = () => {
 
   const handleCheckout = async () => {
     try {
-      await axios.put(`http://localhost:5000/api/lots/${lotId}`, {
+      await axios.put(`https://parking-lot-management-system-k103.onrender.com/api/lots/${lotId}`, {
         availabilityStatus: "available",
       });
 
