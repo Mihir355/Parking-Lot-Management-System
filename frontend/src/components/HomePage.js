@@ -67,7 +67,7 @@ const Homepage = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "https://parking-lot-management-system-backend-7462.onrender.com/api/otp/send-otp",
+        "https://parking-lot-management-system-backend-mse9.onrender.com/api/otp/send-otp",
         {
           phoneNumber,
           lotId,
@@ -89,7 +89,7 @@ const Homepage = () => {
     e.preventDefault();
     try {
       const response = await axios.post(
-        "https://parking-lot-management-system-backend-7462.onrender.com/api/otp/verify-otp",
+        "https://parking-lot-management-system-backend-mse9.onrender.com/api/otp/verify-otp",
         {
           phoneNumber,
           lotId,
@@ -116,7 +116,7 @@ const Homepage = () => {
   const handleCheckout = async () => {
     try {
       await axios.put(
-        `https://parking-lot-management-system-backend-7462.onrender.com/api/lots/${lotId}`,
+        `https://parking-lot-management-system-backend-mse9.onrender.com/api/lots/${lotId}`,
         {
           availabilityStatus: "available",
         }

@@ -19,7 +19,7 @@ const AvailableSlotsPage = () => {
       if (vehicleType) {
         try {
           const response = await axios.get(
-            `https://parking-lot-management-system-backend-7462.onrender.com/api/user/available-slots/${vehicleType}`
+            `https://parking-lot-management-system-backend-mse9.onrender.com/api/user/available-slots/${vehicleType}`
           );
           setSlots(response.data);
         } catch (error) {
@@ -45,7 +45,7 @@ const AvailableSlotsPage = () => {
 
     try {
       await axios.post(
-        "https://parking-lot-management-system-backend-7462.onrender.com/api/user/book-slot",
+        "https://parking-lot-management-system-backend-mse9.onrender.com/api/user/book-slot",
         {
           lotId,
           phoneNumber,
