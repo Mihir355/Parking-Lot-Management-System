@@ -98,7 +98,6 @@ const Homepage = () => {
       );
 
       if (response.data.success) {
-        console.log(response.data);
         const cost = response.data.totalCost;
         setTotalCost(cost);
 

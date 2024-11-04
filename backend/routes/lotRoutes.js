@@ -5,8 +5,6 @@ const router = express.Router();
 router.put("/:id", async (req, res) => {
   try {
     const { availabilityStatus } = req.body;
-    console.log("Lot ID:", req.params.id);
-    console.log("Availability Status:", availabilityStatus);
 
     const updatedLot = await LotModel.findOneAndUpdate(
       { lotId: req.params.id },
@@ -20,7 +18,6 @@ router.put("/:id", async (req, res) => {
 
     res.json(updatedLot);
   } catch (error) {
-    console.log("Error updating lot:", error);
     res.status(500).json({ message: "Server error" });
   }
 });

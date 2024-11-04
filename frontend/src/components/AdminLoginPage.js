@@ -21,7 +21,6 @@ const AdminLoginPage = () => {
       );
 
       if (response.data.success) {
-        console.log("Admin logged in successfully!");
         navigate("/admin-dashboard");
       } else {
         alert("Invalid username or password.");

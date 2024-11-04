@@ -85,7 +85,6 @@ router.post("/verify-otp", async (req, res) => {
   await ticket.save();
 
   delete otpStore[`${phoneNumber}_${lotId}`];
-  console.log(totalCost);
   return res.json({
     success: true,
     message: "OTP verified successfully.",
