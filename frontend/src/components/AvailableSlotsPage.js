@@ -24,6 +24,7 @@ const AvailableSlotsPage = () => {
           setSlots(response.data);
         } catch (error) {
           console.error("Error fetching slots:", error);
+          alert("Error fetching slots. Please try again later.");
         }
       }
     };

@@ -27,6 +27,9 @@ const AdminDashboard = () => {
         setPrices(pricesResponse.data);
       } catch (error) {
         console.error("Error fetching data:", error);
+        alert(
+          "Error loading data. Please check your network or try again later."
+        );
       }
     };
     fetchData();
@@ -34,6 +37,7 @@ const AdminDashboard = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    alert("You have been logged out.");
     navigate("/adminlogin");
   };
 
@@ -52,7 +56,7 @@ const AdminDashboard = () => {
       setSlotCount("");
     } catch (error) {
       console.error("Error adding slots:", error);
-      alert("Failed to add slots. Try again.");
+      alert("Failed to add slots. Please try again.");
     }
   };
 
@@ -66,7 +70,7 @@ const AdminDashboard = () => {
       alert("Prices updated successfully!");
     } catch (error) {
       console.error("Error updating prices:", error);
-      alert("Failed to update prices. Try again.");
+      alert("Failed to update prices. Please try again.");
     }
   };
 
