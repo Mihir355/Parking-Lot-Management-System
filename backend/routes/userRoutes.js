@@ -20,14 +20,14 @@ router.get("/available-slots/:vehicleType", async (req, res) => {
 });
 
 router.post("/book-slot", async (req, res) => {
-  const { lotId, phoneNumber } = req.body;
+  const { lotId, email } = req.body; // Changed phoneNumber to email
 
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
     const activeTicket = await Ticket.findOne({
-      phoneNumber,
+      email, // Changed phoneNumber to email
       endTime: { $exists: false },
     });
 
@@ -56,7 +56,7 @@ router.post("/book-slot", async (req, res) => {
 
     const ticket = new Ticket({
       vehicleType: lot.vehicleType,
-      phoneNumber,
+      email, // Changed phoneNumber to email
       lotId,
     });
     await ticket.save({ session });

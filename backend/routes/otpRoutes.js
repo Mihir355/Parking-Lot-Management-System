@@ -4,20 +4,24 @@ const dotenv = require("dotenv").config();
 const TicketModel = require("../models/TicketModel");
 const LotModel = require("../models/LotModel");
 const PriceModel = require("../models/PriceModel");
-const twilio = require("twilio");
-
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const client = twilio(accountSid, authToken);
-
+const nodemailer = require("nodemailer");
 const otpStore = {};
 
+// Email transporter configuration
+const transporter = nodemailer.createTransport({
+  service: "gmail", // Use your email service (e.g., Gmail, Outlook)
+  auth: {
+    user: process.env.EMAIL_USER, // Your email address
+    pass: process.env.EMAIL_PASSWORD, // Your email password or app-specific password
+  },
+});
+
 router.post("/send-otp", async (req, res) => {
-  const { phoneNumber, lotId } = req.body;
+  const { email, lotId } = req.body;
 
   try {
     const user = await TicketModel.findOne({
-      phoneNumber,
+      email,
       lotId,
     });
 
@@ -29,15 +33,18 @@ router.post("/send-otp", async (req, res) => {
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    await client.messages.create({
-      body: `Your OTP for checkout is ${otp}`,
-      from: process.env.TWILIO_PHONE_NUMBER,
-      to: phoneNumber,
-    });
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Your Parking Lot Checkout OTP",
+      text: `Your OTP for checkout is ${otp}`,
+    };
 
-    otpStore[`${phoneNumber}_${lotId}`] = otp;
+    await transporter.sendMail(mailOptions);
 
-    res.json({ success: true, message: "OTP sent to your phone number." });
+    otpStore[`${email}_${lotId}`] = otp;
+
+    res.json({ success: true, message: "OTP sent to your email address." });
   } catch (error) {
     console.error("Error sending OTP:", error);
     res.status(500).json({
@@ -48,15 +55,15 @@ router.post("/send-otp", async (req, res) => {
 });
 
 router.post("/verify-otp", async (req, res) => {
-  const { phoneNumber, lotId, otp } = req.body;
+  const { email, lotId, otp } = req.body;
 
-  const storedOtp = otpStore[`${phoneNumber}_${lotId}`];
+  const storedOtp = otpStore[`${email}_${lotId}`];
   if (storedOtp !== otp.toString()) {
     return res.status(400).json({ success: false, message: "Invalid OTP." });
   }
 
   const ticket = await TicketModel.findOne({
-    phoneNumber,
+    email,
     lotId,
     endTime: { $exists: false },
   });
@@ -84,7 +91,7 @@ router.post("/verify-otp", async (req, res) => {
 
   await ticket.save();
 
-  delete otpStore[`${phoneNumber}_${lotId}`];
+  delete otpStore[`${email}_${lotId}`];
   return res.json({
     success: true,
     message: "OTP verified successfully.",

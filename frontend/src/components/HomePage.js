@@ -14,7 +14,7 @@ const Homepage = () => {
   const location = useLocation();
   const [activeContent, setActiveContent] = useState(null);
   const [vehicleType, setVehicleType] = useState("");
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [email, setEmail] = useState(""); // Changed to email
   const [lotId, setLotId] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
@@ -46,8 +46,9 @@ const Homepage = () => {
     setVehicleType(e.target.value);
   };
 
-  const handlePhoneNumberChange = (e) => {
-    setPhoneNumber(e.target.value);
+  const handleEmailChange = (e) => {
+    // Changed to email
+    setEmail(e.target.value);
   };
 
   const handleLotIdChange = (e) => {
@@ -69,15 +70,15 @@ const Homepage = () => {
       const response = await axios.post(
         "https://parking-lot-management-system-xf6h.onrender.com/api/otp/send-otp",
         {
-          phoneNumber,
+          email, // Using email instead of phone number
           lotId,
         }
       );
       if (response.data.success) {
-        alert("OTP sent to your phone number.");
+        alert("OTP sent to your email.");
         setOtpSent(true);
       } else {
-        alert("Phone number and Lot ID do not match any record.");
+        alert("Email and Lot ID do not match any record.");
       }
     } catch (error) {
       console.error("Error sending OTP:", error);
@@ -91,7 +92,7 @@ const Homepage = () => {
       const response = await axios.post(
         "https://parking-lot-management-system-xf6h.onrender.com/api/otp/verify-otp",
         {
-          phoneNumber,
+          email, // Using email instead of phone number
           lotId,
           otp,
         }
@@ -127,7 +128,7 @@ const Homepage = () => {
       setActiveContent(null);
       setOtpSent(false);
       setOtp("");
-      setPhoneNumber("");
+      setEmail(""); // Clear email field
       setLotId("");
       setTotalCost(0);
       setCheckoutComplete(false);
@@ -214,10 +215,10 @@ const Homepage = () => {
                   <h2>Exit & Checkout - Send OTP</h2>
                   <form onSubmit={otpSent ? handleVerifyOTP : handleSendOTP}>
                     <input
-                      type="text"
-                      placeholder="Enter your phone number"
-                      value={phoneNumber}
-                      onChange={handlePhoneNumberChange}
+                      type="email" // Changed to email input
+                      placeholder="Enter your email"
+                      value={email}
+                      onChange={handleEmailChange}
                       required
                     />
                     <input

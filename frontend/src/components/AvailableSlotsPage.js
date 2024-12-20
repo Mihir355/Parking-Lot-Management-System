@@ -7,7 +7,7 @@ const AvailableSlotsPage = () => {
   const [slots, setSlots] = useState([]);
   const [bookingInfo, setBookingInfo] = useState({
     lotId: "",
-    phoneNumber: "",
+    email: "",
   });
   const [isBooking, setIsBooking] = useState(false);
   const navigate = useNavigate();
@@ -36,25 +36,23 @@ const AvailableSlotsPage = () => {
     setIsBooking(true);
   };
 
-  const handlePhoneNumberChange = (e) => {
-    setBookingInfo({ ...bookingInfo, phoneNumber: e.target.value });
+  const handleEmailChange = (e) => {
+    setBookingInfo({ ...bookingInfo, email: e.target.value });
   };
 
   const handleSubmitBooking = async (e) => {
     e.preventDefault();
-    const { lotId, phoneNumber } = bookingInfo;
+    const { lotId, email } = bookingInfo;
 
     try {
       await axios.post(
         "https://parking-lot-management-system-xf6h.onrender.com/api/user/book-slot",
         {
           lotId,
-          phoneNumber,
+          email,
         }
       );
-      alert(
-        `Slot ${lotId} booked successfully for phone number ${phoneNumber}!`
-      );
+      alert(`Slot ${lotId} booked successfully for email ${email}!`);
       setIsBooking(false);
       navigate("/");
     } catch (error) {
@@ -81,12 +79,12 @@ const AvailableSlotsPage = () => {
 
       {isBooking && (
         <form className="booking-form" onSubmit={handleSubmitBooking}>
-          <h3>Enter your phone number to book the slot:</h3>
+          <h3>Enter your email ID to book the slot:</h3>
           <input
-            type="text"
-            placeholder="Phone Number"
-            value={bookingInfo.phoneNumber}
-            onChange={handlePhoneNumberChange}
+            type="email"
+            placeholder="Email ID"
+            value={bookingInfo.email}
+            onChange={handleEmailChange}
             required
           />
           <button type="submit">Confirm Booking</button>
