@@ -1,10 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const dotenv = require("dotenv");
-const bcrypt = require("bcrypt");
 const LotModel = require("../models/LotModel");
 const PriceModel = require("../models/PriceModel");
-const AdminModel = require("../models/AdminModel");
 dotenv.config();
 
 router.post("/login", (req, res) => {
