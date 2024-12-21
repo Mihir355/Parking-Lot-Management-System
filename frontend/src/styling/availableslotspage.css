@@ -73,7 +73,7 @@
   font-size: 1.1rem;
 }
 
-.booking-form input[type="text"] {
+.booking-form input[type="email"] {
   padding: 12px;
   margin-bottom: 15px;
   width: 100%;
@@ -84,7 +84,7 @@
   transition: border-color 0.3s ease;
 }
 
-.booking-form input[type="text"]:focus {
+.booking-form input[type="email"]:focus {
   border-color: #2196f3;
   outline: none;
 }
