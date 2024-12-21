@@ -7,60 +7,16 @@ const PriceModel = require("../models/PriceModel");
 const AdminModel = require("../models/AdminModel");
 dotenv.config();
 
-router.post("/login", async (req, res) => {
+router.post("/login", (req, res) => {
   const { username, password } = req.body;
 
-  try {
-    const admin = await AdminModel.findOne({ username });
-    if (!admin) {
-      return res
-        .status(401)
-        .json({ success: false, message: "Invalid credentials" });
-    }
-
-    const isPasswordMatch = await bcrypt.compare(password, admin.password);
-    if (!isPasswordMatch) {
-      return res
-        .status(401)
-        .json({ success: false, message: "Invalid credentials" });
-    }
-
+  if (
+    username === process.env.REACT_APP_ADMIN_USERNAME &&
+    password === process.env.REACT_APP_ADMIN_PASSWORD
+  ) {
     res.json({ success: true });
-  } catch (error) {
-    console.error("Error logging in:", error);
-    res.status(500).json({ success: false, message: "Error logging in" });
-  }
-});
-
-// Admin sign-up
-router.post("/signup", async (req, res) => {
-  const { username, password } = req.body;
-
-  try {
-    const existingAdmin = await AdminModel.findOne({});
-    if (existingAdmin) {
-      return res
-        .status(403)
-        .json({ success: false, message: "Admin already exists" });
-    }
-
-    const newAdmin = new AdminModel({ username, password });
-    await newAdmin.save();
-    res.json({ success: true, message: "Admin account created successfully" });
-  } catch (error) {
-    console.error("Error creating admin:", error);
-    res.status(500).json({ success: false, message: "Error creating admin" });
-  }
-});
-
-// Check if admin exists
-router.get("/check-admin", async (req, res) => {
-  try {
-    const admin = await AdminModel.findOne({});
-    res.json({ exists: !!admin });
-  } catch (error) {
-    console.error("Error checking admin:", error);
-    res.status(500).json({ success: false, message: "Error checking admin" });
+  } else {
+    res.status(401).json({ success: false, message: "Invalid credentials" });
   }
 });
 
