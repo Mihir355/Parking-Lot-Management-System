@@ -36,7 +36,7 @@ const AdminDashboard = () => {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem("isAdminAuthenticated"); // ✅ Clear this too
     alert("You have been logged out.");
     navigate("/adminlogin");
   };

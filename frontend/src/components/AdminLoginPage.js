@@ -21,6 +21,7 @@ const AdminLoginPage = () => {
       );
 
       if (response.data.success) {
+        localStorage.setItem("isAdminAuthenticated", "true"); // ✅ Add this
         alert("Login successful!");
         navigate("/admin-dashboard");
       } else {
