@@ -3,7 +3,7 @@ const router = express.Router();
 const LotModel = require("../models/LotModel");
 const Ticket = require("../models/TicketModel");
 const mongoose = require("mongoose");
-const redisClient = require("../middleware/redisClient"); // Import the Redis client
+const { client: redisClient } = require("../middleware/redisClient");
 
 router.get("/available-slots/:vehicleType", async (req, res) => {
   const vehicleType = req.params.vehicleType;
