@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import "../styling/availableslotspage.css";
@@ -10,6 +10,7 @@ const AvailableSlotsPage = () => {
     email: "",
   });
   const [isBooking, setIsBooking] = useState(false);
+  const formRef = useRef(null); // ✅ Form reference for scrolling
   const navigate = useNavigate();
   const location = useLocation();
   const vehicleType = location.state?.vehicleType;
@@ -34,6 +35,12 @@ const AvailableSlotsPage = () => {
   const handleBookSlot = (lotId) => {
     setBookingInfo({ ...bookingInfo, lotId });
     setIsBooking(true);
+    // ✅ Scroll to the form after a slight delay to ensure it's rendered
+    setTimeout(() => {
+      if (formRef.current) {
+        formRef.current.scrollIntoView({ behavior: "smooth" });
+      }
+    }, 100);
   };
 
   const handleEmailChange = (e) => {
@@ -78,8 +85,12 @@ const AvailableSlotsPage = () => {
       </ul>
 
       {isBooking && (
-        <form className="booking-form" onSubmit={handleSubmitBooking}>
-          <h3>Enter your email ID to book the slot:</h3>
+        <form
+          ref={formRef}
+          className="booking-form"
+          onSubmit={handleSubmitBooking}
+        >
+          <h3>Enter your email ID to book the lot:</h3>
           <input
             type="email"
             placeholder="Email ID"
