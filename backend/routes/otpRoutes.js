@@ -5,18 +5,33 @@ const TicketModel = require("../models/TicketModel");
 const LotModel = require("../models/LotModel");
 const PriceModel = require("../models/PriceModel");
 const nodemailer = require("nodemailer");
+const rateLimit = require("express-rate-limit");
+
 const otpStore = {};
+
+// ✅ Rate Limiting (by IP — default behavior)
+const otpLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 15 minutes
+  max: 5, // Max 3 requests per window per IP
+  message: {
+    success: false,
+    message: "Too many OTP requests. Please try again after 15 minutes.",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
 
 // Email transporter configuration
 const transporter = nodemailer.createTransport({
-  service: "gmail", // Use your email service (e.g., Gmail, Outlook)
+  service: "gmail",
   auth: {
-    user: process.env.EMAIL_USER, // Your email address
-    pass: process.env.EMAIL_PASSWORD, // Your email password or app-specific password
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD,
   },
 });
 
-router.post("/send-otp", async (req, res) => {
+// ✅ Apply the rate limiter middleware to OTP route
+router.post("/send-otp", otpLimiter, async (req, res) => {
   const { email, lotId } = req.body;
 
   try {
@@ -42,7 +57,11 @@ router.post("/send-otp", async (req, res) => {
 
     await transporter.sendMail(mailOptions);
 
-    otpStore[`${email}_${lotId}`] = otp;
+    otpStore[`${email}_${lotId}`] = {
+      otp,
+      expiresAt: Date.now() + 5 * 60 * 1000, // 5-minute expiry
+      used: false,
+    };
 
     res.json({ success: true, message: "OTP sent to your email address." });
   } catch (error) {
@@ -56,9 +75,27 @@ router.post("/send-otp", async (req, res) => {
 
 router.post("/verify-otp", async (req, res) => {
   const { email, lotId, otp } = req.body;
+  const key = `${email}_${lotId}`;
+  const otpEntry = otpStore[key];
 
-  const storedOtp = otpStore[`${email}_${lotId}`];
-  if (storedOtp !== otp.toString()) {
+  if (!otpEntry) {
+    return res.status(400).json({ success: false, message: "No OTP found." });
+  }
+
+  if (otpEntry.used) {
+    return res
+      .status(400)
+      .json({ success: false, message: "OTP has already been used." });
+  }
+
+  if (Date.now() > otpEntry.expiresAt) {
+    delete otpStore[key];
+    return res
+      .status(400)
+      .json({ success: false, message: "OTP has expired." });
+  }
+
+  if (otpEntry.otp !== otp.toString()) {
     return res.status(400).json({ success: false, message: "Invalid OTP." });
   }
 
@@ -91,7 +128,8 @@ router.post("/verify-otp", async (req, res) => {
 
   await ticket.save();
 
-  delete otpStore[`${email}_${lotId}`];
+  otpEntry.used = true;
+
   return res.json({
     success: true,
     message: "OTP verified successfully.",
