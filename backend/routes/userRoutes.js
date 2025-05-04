@@ -3,7 +3,6 @@ const router = express.Router();
 const LotModel = require("../models/LotModel");
 const Ticket = require("../models/TicketModel");
 const mongoose = require("mongoose");
-const { client: redisClient } = require("../middleware/redisClient");
 
 router.get("/available-slots/:vehicleType", async (req, res) => {
   const vehicleType = req.params.vehicleType;
@@ -23,79 +22,54 @@ router.get("/available-slots/:vehicleType", async (req, res) => {
 router.post("/book-slot", async (req, res) => {
   const { lotId, email } = req.body;
 
-  const lockKey = `lock:lot:${lotId}`;
-  const lockTimeout = 30000; // 30 seconds
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
-  // Try to acquire lock
   try {
-    const isLocked = await redisClient.set(lockKey, "locked", {
-      NX: true, // Set only if not exists
-      PX: lockTimeout, // Auto expire
+    const activeTicket = await Ticket.findOne({
+      email,
+      endTime: { $exists: false },
     });
 
-    if (!isLocked) {
-      return res.status(423).json({
-        error: "Slot is currently being booked by another user.",
-      });
-    }
-
-    // Proceed with booking using transaction
-    const session = await mongoose.startSession();
-    session.startTransaction();
-
-    try {
-      const activeTicket = await Ticket.findOne({
-        email,
-        endTime: { $exists: false },
-      });
-
-      if (activeTicket) {
-        await session.abortTransaction();
-        await redisClient.del(lockKey);
-        session.endSession();
-        return res.status(400).json({
-          error:
-            "You already have an active booking. Please check out before booking a new slot.",
-        });
-      }
-
-      const lot = await LotModel.findOneAndUpdate(
-        { lotId, availabilityStatus: "available" },
-        { availabilityStatus: "occupied" },
-        { new: true, session }
-      );
-
-      if (!lot) {
-        await session.abortTransaction();
-        await redisClient.del(lockKey);
-        session.endSession();
-        return res
-          .status(404)
-          .json({ error: "Lot already booked or not found." });
-      }
-
-      const ticket = new Ticket({
-        vehicleType: lot.vehicleType,
-        email,
-        lotId,
-      });
-
-      await ticket.save({ session });
-      await session.commitTransaction();
-      session.endSession();
-
-      await redisClient.del(lockKey); // Release the lock
-      res.status(200).json({ message: "Slot booked successfully", ticket });
-    } catch (error) {
+    if (activeTicket) {
       await session.abortTransaction();
       session.endSession();
-      await redisClient.del(lockKey);
-      console.error("Error booking slot:", error);
-      res.status(500).json({ error: "Failed to book slot." });
+      return res.status(400).json({
+        error:
+          "You already have an active booking. Please check out before booking a new slot.",
+      });
     }
+
+    const lot = await LotModel.findOneAndUpdate(
+      { lotId, availabilityStatus: "available" },
+      { availabilityStatus: "occupied" },
+      { new: true, session }
+    );
+
+    if (!lot) {
+      await session.abortTransaction();
+      session.endSession();
+      return res
+        .status(404)
+        .json({ error: "Lot already booked or not found." });
+    }
+
+    const ticket = new Ticket({
+      vehicleType: lot.vehicleType,
+      email,
+      lotId,
+    });
+
+    await ticket.save({ session });
+    await session.commitTransaction();
+    session.endSession();
+
+    res.status(200).json({ message: "Slot booked successfully", ticket });
   } catch (error) {
-    console.error("Redis locking error:", error);
-    res.status(500).json({ error: "Server error during locking mechanism." });
+    await session.abortTransaction();
+    session.endSession();
+    console.error("Error booking slot:", error);
+    res.status(500).json({ error: "Failed to book slot." });
   }
 });
 

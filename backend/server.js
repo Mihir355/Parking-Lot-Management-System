@@ -8,12 +8,7 @@ const adminRoutes = require("./routes/adminRoutes");
 const userRoutes = require("./routes/userRoutes");
 const otpRoutes = require("./routes/otpRoutes");
 const lotRoutes = require("./routes/lotRoutes");
-const {
-  client: redisClient,
-  connectRedis,
-} = require("./middleware/redisClient");
 
-connectRedis();
 const app = express();
 app.use(express.json());
 app.use(cors());
