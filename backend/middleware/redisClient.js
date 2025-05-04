@@ -1,12 +1,18 @@
-// redisClient.js
 const redis = require("redis");
 
 const redisClient = redis.createClient({
-  url: "redis://localhost:6379", // Update if you're using a hosted Redis
+  url: "rediss://default:9Zlg69KsL4IVlVCiRl44nEoduwsKgYnZ@redis-18782.c305.ap-south-1-1.ec2.redns.redis-cloud.com:18782",
 });
 
-redisClient.on("error", (err) => console.error("Redis error:", err));
+redisClient.on("error", (err) => console.error("❌ Redis Error:", err));
 
-redisClient.connect();
+(async () => {
+  try {
+    await redisClient.connect();
+    console.log("✅ Connected to Redis Cloud");
+  } catch (err) {
+    console.error("❌ Redis connection failed:", err);
+  }
+})();
 
 module.exports = redisClient;
