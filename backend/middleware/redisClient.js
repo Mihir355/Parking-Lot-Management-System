@@ -1,24 +1,28 @@
-const redis = require("redis");
+import { createClient } from "redis";
 
-const redisClient = redis.createClient({
-  socket: {
-    host: "redis-18782.c305.ap-south-1-1.ec2.redns.redis-cloud.com", // e.g. redis-xxxx.c10.us-east-1-4.ec2.cloud.redislabs.com
-    port: 18782, // e.g. 12345
-    tls: true, // ✅ enable SSL/TLS
-  },
+const client = createClient({
   username: "default",
   password: "9Zlg69KsL4IVlVCiRl44nEoduwsKgYnZ",
+  socket: {
+    host: "redis-18782.c305.ap-south-1-1.ec2.redns.redis-cloud.com",
+    port: 18782,
+    tls: true, // important: required for Redis Cloud
+  },
 });
 
-redisClient.on("error", (err) => console.error("❌ Redis Error:", err));
+client.on("error", (err) => {
+  console.error("❌ Redis Client Error:", err);
+});
 
-(async () => {
+const connectRedis = async () => {
   try {
-    await redisClient.connect();
-    console.log("✅ Connected to Redis Cloud");
+    await client.connect();
+    console.log("✅ Redis connected");
   } catch (err) {
     console.error("❌ Redis connection failed:", err);
   }
-})();
+};
 
-module.exports = redisClient;
+connectRedis(); // fire the connection immediately
+
+export default client;
