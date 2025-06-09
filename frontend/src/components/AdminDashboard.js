@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import QrReader from "react-qr-reader";
+import { Html5Qrcode } from "html5-qrcode";
 import "../styling/admindashboard.css";
 
 const AdminDashboard = () => {
@@ -14,6 +14,8 @@ const AdminDashboard = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [qrScanResult, setQrScanResult] = useState("");
   const [qrStatus, setQrStatus] = useState("");
+  const html5QrCodeRef = useRef(null);
+  const qrCodeRegionId = "qr-scanner";
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -36,6 +38,15 @@ const AdminDashboard = () => {
       }
     };
     fetchData();
+
+    // Cleanup QR scanner on unmount
+    return () => {
+      if (html5QrCodeRef.current) {
+        html5QrCodeRef.current.stop().then(() => {
+          html5QrCodeRef.current.clear();
+        });
+      }
+    };
   }, []);
 
   const handleLogout = () => {
@@ -77,10 +88,52 @@ const AdminDashboard = () => {
     }
   };
 
+  const startQRScanner = () => {
+    if (!html5QrCodeRef.current) {
+      html5QrCodeRef.current = new Html5Qrcode(qrCodeRegionId);
+    }
+
+    Html5Qrcode.getCameras()
+      .then((devices) => {
+        if (devices && devices.length) {
+          const cameraId = devices[0].id;
+          html5QrCodeRef.current
+            .start(
+              cameraId,
+              {
+                fps: 10,
+                qrbox: 250,
+              },
+              handleQRScan,
+              handleQRError
+            )
+            .catch((err) => {
+              console.error("QR Scanner Start Error:", err);
+              setQrStatus("❌ Could not start camera.");
+            });
+        } else {
+          setQrStatus("❌ No cameras found.");
+        }
+      })
+      .catch((err) => {
+        console.error("Camera access error:", err);
+        setQrStatus("❌ Camera access error.");
+      });
+  };
+
+  const stopQRScanner = () => {
+    if (html5QrCodeRef.current) {
+      html5QrCodeRef.current.stop().then(() => {
+        html5QrCodeRef.current.clear();
+      });
+    }
+  };
+
   const handleQRScan = async (token) => {
     if (token && token !== qrScanResult) {
       setQrScanResult(token);
       setQrStatus("Verifying QR...");
+      stopQRScanner();
 
       try {
         const response = await axios.post(
@@ -101,8 +154,8 @@ const AdminDashboard = () => {
   };
 
   const handleQRError = (err) => {
-    console.error("QR Reader Error:", err);
-    setQrStatus("❌ Could not access camera.");
+    console.error("QR Error:", err);
+    setQrStatus("❌ QR Scan Error.");
   };
 
   const toggleMenu = () => {
@@ -207,12 +260,14 @@ const AdminDashboard = () => {
         {selectedOption === "scan-qr" && (
           <div className="qr-scanner-section">
             <h2>Scan User QR Code</h2>
-            <QrReader
-              delay={300}
-              onError={handleQRError}
-              onScan={handleQRScan}
+            <div
+              id={qrCodeRegionId}
               style={{ width: "300px", margin: "0 auto" }}
-            />
+            ></div>
+            <button onClick={startQRScanner}>Start Scanner</button>
+            <button onClick={stopQRScanner} style={{ marginLeft: "10px" }}>
+              Stop Scanner
+            </button>
             <p>
               <strong>Status:</strong> {qrStatus}
             </p>
