@@ -1,208 +1,142 @@
-.homepage-container {
-    display: flex;
-    height: 100vh;
+/* General Page Wrapper */
+.homepage-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f4f4f4;
+  padding: 0 20px;
 }
 
-.left-side {
-    flex: 0.4;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    overflow: hidden;
+/* Header Section */
+.homepage-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+  border-bottom: 2px solid #ddd;
+  background: #ffffff;
 }
 
-.parking-image {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+.homepage-header h1 {
+  font-size: 24px;
+  color: #333;
 }
 
-.right-side {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 10px;
+.logout-btn {
+  padding: 8px 16px;
+  background-color: #ff4d4f;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
-.main-heading {
-    margin-top: 10px;
-    font-size: 3.5rem;
-    margin-bottom: 30px;
-    text-align: center;
+.logout-btn:hover {
+  background-color: #e60000;
 }
 
-.content-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
+/* Navigation Tabs */
+.homepage-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin: 20px 0;
 }
 
-.circle-container {
-    display: flex;
+.homepage-tabs button {
+  padding: 10px 20px;
+  background-color: #e0e0e0;
+  border: none;
+  border-radius: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.homepage-tabs button:hover {
+  background-color: #ccc;
+}
+
+.homepage-tabs button.active {
+  background-color: #007bff;
+  color: white;
+}
+
+/* Main Content Section */
+.homepage-content {
+  flex: 1;
+  padding: 20px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Forms and Inputs */
+.form-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.form-section h2 {
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.form-section input,
+.form-section select,
+.form-section button {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+.form-section button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.form-section button:hover {
+  background-color: #218838;
+}
+
+/* History Section */
+.history-section {
+  margin-top: 10px;
+}
+
+.booking-list {
+  list-style: none;
+  padding: 0;
+}
+
+.booking-list li {
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  margin-bottom: 10px;
+  background-color: #fafafa;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* Responsive Design */
+@media (max-width: 600px) {
+  .homepage-header,
+  .homepage-tabs {
     flex-direction: column;
     align-items: flex-start;
-    gap: 30px;
-}
+    gap: 10px;
+  }
 
-.whole-description {
-    display: flex;
-    align-items: center;
-    gap: 25px;
-}
-
-.circle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: #f0f0f0;
-    border-radius: 50%;
-    padding: 20px;
-    width: 100px;
-    height: 100px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    transition: transform 0.3s;
-}
-
-.circle:hover {
-    transform: scale(1.1);
-}
-
-.desc h2 {
-    font-size: 1.8rem;
-}
-
-.site-description {
-    font-size: 1rem;
-    max-width: 600px;
-    text-align: center;
-    margin-top: 25px;
-}
-
-.active-content {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 30px;
-    border: 1px solid #ccc;
-    border-radius: 12px;
-    background-color: #ffffff;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    width: 50%;
-    max-width: 400px;
-    margin: 0 auto;
-}
-
-.active-content h2 {
-    margin-bottom: 15px;
-}
-
-.active-content form {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    width: 100%;
-}
-
-.active-content input,
-.active-content select {
-    padding: 12px 15px;
-    font-size: 1rem;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-}
-
-.active-content input:focus,
-.active-content select:focus {
-    border-color: #007bff;
-    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
-    outline: none;
-}
-
-.active-content button {
-    padding: 12px 20px;
-    font-size: 1.1rem;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-top: 10px;
-}
-
-.active-content button:hover {
-    background-color: #0056b3;
-    transform: translateY(-2px);
-}
-
-.checkout-info {
-    margin-top: 20px;
+  .homepage-content {
     padding: 15px;
-    border-top: 1px solid #ddd;
-}
-
-.total-cost {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: #333;
-}
-
-@media (max-width: 1200px) {
-    .main-heading {
-        font-size: 3rem;
-    }
-    .circle {
-        width: 80px;
-        height: 80px;
-        padding: 15px;
-    }
-    .desc h2 {
-        font-size: 1.5rem;
-    }
-    .active-content {
-        width: 70%;
-    }
-}
-
-@media (max-width: 992px) {
-    .homepage-container {
-        flex-direction: column;
-        height: auto;
-    }
-    .left-side {
-        flex: 1;
-        height: auto;
-    }
-    .right-side {
-        align-items: center;
-        padding: 20px;
-    }
-    .circle-container {
-        align-items: center;
-    }
-    .active-content {
-        width: 80%;
-        max-width: none;
-    }
-}
-
-@media (max-width: 768px) {
-    .main-heading {
-        font-size: 2.5rem;
-    }
-    .desc h2 {
-        font-size: 1.2rem;
-    }
-    .site-description {
-        font-size: 0.9rem;
-    }
-    .active-content {
-        width: 90%;
-    }
+  }
 }

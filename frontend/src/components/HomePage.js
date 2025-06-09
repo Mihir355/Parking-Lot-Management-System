@@ -1,93 +1,90 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import "../styling/homepage.css";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCheckCircle, faSignOutAlt } from "@fortawesome/free-solid-svg-icons"; // Removed faLock
 import axios from "axios";
 
 const Homepage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const [activeContent, setActiveContent] = useState(null);
+
   const [vehicleType, setVehicleType] = useState("");
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(localStorage.getItem("userEmail") || "");
   const [lotId, setLotId] = useState("");
-  const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [checkoutReady, setCheckoutReady] = useState(false);
   const [totalCost, setTotalCost] = useState(0);
-  const [checkoutComplete, setCheckoutComplete] = useState(false);
+  const [activeTab, setActiveTab] = useState("book");
+  const [history, setHistory] = useState([]);
+
+  const userId = localStorage.getItem("userId");
+  const userName = localStorage.getItem("userName");
 
   useEffect(() => {
-    if (location.state?.activeContent) {
-      setActiveContent(location.state.activeContent);
+    if (activeTab === "history") {
+      fetchBookingHistory();
     }
-  }, [location.state]);
+  }, [activeTab]);
 
-  const handleCircleClick = (type) => {
-    setActiveContent(type);
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/");
   };
 
-  const handleGoBack = () => {
-    setActiveContent(null);
-    setOtpSent(false);
-    setTotalCost(0);
-    setCheckoutComplete(false);
+  const fetchBookingHistory = async () => {
+    try {
+      const res = await axios.get(
+        `https://parking-lot-management-system-xf6h.onrender.com/api/bookings/user/${userId}`
+      );
+      setHistory(res.data.bookings || []);
+    } catch (err) {
+      console.error("Error fetching booking history", err);
+      alert("Unable to fetch booking history. Try again later.");
+    }
   };
 
-  const handleVehicleTypeChange = (e) => setVehicleType(e.target.value);
-  const handleEmailChange = (e) => setEmail(e.target.value);
-  const handleLotIdChange = (e) => setLotId(e.target.value);
-  const handleOtpChange = (e) => setOtp(e.target.value);
-
-  const handleCheckAvailability = (e) => {
+  const handleBookSubmit = async (e) => {
     e.preventDefault();
+    if (!vehicleType) return alert("Please select a vehicle type.");
+
     navigate("/available-slots", { state: { vehicleType } });
   };
 
   const handleSendOTP = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(
+      const res = await axios.post(
         "https://parking-lot-management-system-xf6h.onrender.com/api/otp/send-otp",
-        {
-          email,
-          lotId,
-        }
+        { email, lotId }
       );
-      if (response.data.success) {
-        alert("OTP sent to your email.");
+      if (res.data.success) {
         setOtpSent(true);
+        alert("OTP sent to your email.");
       } else {
-        alert("Email and Lot ID do not match any record.");
+        alert("Invalid email or Lot ID.");
       }
-    } catch (error) {
-      console.error("Error sending OTP:", error);
-      alert("An error occurred while sending OTP. Please try again.");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to send OTP.");
     }
   };
 
   const handleVerifyOTP = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post(
+      const res = await axios.post(
         "https://parking-lot-management-system-xf6h.onrender.com/api/otp/verify-otp",
-        {
-          email,
-          lotId,
-          otp,
-        }
+        { email, lotId, otp }
       );
-
-      if (response.data.success) {
-        setTotalCost(response.data.totalCost);
-        alert("OTP verified successfully. Ready to checkout.");
-        setCheckoutComplete(true);
+      if (res.data.success) {
+        setTotalCost(res.data.totalCost);
+        setCheckoutReady(true);
+        alert("OTP verified. Ready to checkout.");
       } else {
-        alert("Invalid OTP. Please try again.");
+        alert("Invalid OTP.");
       }
-    } catch (error) {
-      console.error("Error verifying OTP:", error);
-      alert("An error occurred while verifying OTP. Please try again.");
+    } catch (err) {
+      console.error(err);
+      alert("OTP verification failed.");
     }
   };
 
@@ -95,138 +92,130 @@ const Homepage = () => {
     try {
       await axios.put(
         `https://parking-lot-management-system-xf6h.onrender.com/api/lots/${lotId}`,
-        {
-          availabilityStatus: "available",
-        }
+        { availabilityStatus: "available" }
       );
-
-      alert(
-        `Payment of $${totalCost.toFixed(2)} successful. You are checked out.`
-      );
-      setActiveContent(null);
+      alert(`Checkout successful. Paid $${totalCost.toFixed(2)}.`);
       setOtpSent(false);
+      setCheckoutReady(false);
       setOtp("");
-      setEmail("");
       setLotId("");
       setTotalCost(0);
-      setCheckoutComplete(false);
-    } catch (error) {
-      console.error("Error completing checkout:", error);
-      alert("An error occurred during checkout. Please try again.");
+    } catch (err) {
+      console.error(err);
+      alert("Checkout failed.");
     }
   };
 
   return (
-    <div className="homepage-container">
-      <div className="left-side">
-        <img
-          src="https://res.cloudinary.com/dkpm0glt6/image/upload/v1730013080/Drone_parking_lot_perspective__hckp2h.jpg"
-          alt="Parking Lot"
-          className="parking-image"
-        />
-      </div>
-      <div className="right-side">
-        <p className="main-heading">Parking Lot Management System</p>
-        <div className="content-container">
-          {activeContent === null ? (
-            <div className="circle-container">
-              <div
-                className="whole-description"
-                onClick={() => handleCircleClick("availability")}
-              >
-                <div className="circle">
-                  <FontAwesomeIcon icon={faCheckCircle} size="4x" />
-                </div>
-                <div className="desc">
-                  <h2>Check Availability</h2>
-                </div>
-              </div>
-              <div
-                className="whole-description"
-                onClick={() => handleCircleClick("checkout")}
-              >
-                <div className="circle">
-                  <FontAwesomeIcon icon={faSignOutAlt} size="4x" />
-                </div>
-                <div className="desc">
-                  <h2>Exit & Checkout</h2>
-                </div>
-              </div>
-            </div>
-          ) : (
-            <div className="active-content">
-              {activeContent === "availability" && (
-                <div>
-                  <h2>Check Availability Form</h2>
-                  <form onSubmit={handleCheckAvailability}>
-                    <select
-                      value={vehicleType}
-                      onChange={handleVehicleTypeChange}
-                      required
-                    >
-                      <option value="" disabled>
-                        Select vehicle type
-                      </option>
-                      <option value="Car">Car</option>
-                      <option value="Motorbike">Motorbike</option>
-                      <option value="Bicycle">Bicycle</option>
-                      <option value="SUV">SUV</option>
-                      <option value="Truck">Truck</option>
-                    </select>
-                    <button type="submit">Check</button>
-                  </form>
-                </div>
+    <div className="homepage-wrapper">
+      <header className="homepage-header">
+        <h1>Welcome, {userName || "User"}</h1>
+        <button className="logout-btn" onClick={handleLogout}>
+          Logout
+        </button>
+      </header>
+
+      <nav className="homepage-tabs">
+        <button
+          className={activeTab === "book" ? "active" : ""}
+          onClick={() => setActiveTab("book")}
+        >
+          Book Slot
+        </button>
+        <button
+          className={activeTab === "checkout" ? "active" : ""}
+          onClick={() => setActiveTab("checkout")}
+        >
+          Exit & Checkout
+        </button>
+        <button
+          className={activeTab === "history" ? "active" : ""}
+          onClick={() => setActiveTab("history")}
+        >
+          Booking History
+        </button>
+      </nav>
+
+      <main className="homepage-content">
+        {activeTab === "book" && (
+          <form onSubmit={handleBookSubmit} className="form-section">
+            <h2>Check Slot Availability</h2>
+            <select
+              value={vehicleType}
+              onChange={(e) => setVehicleType(e.target.value)}
+              required
+            >
+              <option value="">Select Vehicle Type</option>
+              <option value="Car">Car</option>
+              <option value="SUV">SUV</option>
+              <option value="Motorbike">Motorbike</option>
+              <option value="Bicycle">Bicycle</option>
+              <option value="Truck">Truck</option>
+            </select>
+            <button type="submit">Check Slots</button>
+          </form>
+        )}
+
+        {activeTab === "checkout" && (
+          <div className="form-section">
+            <h2>Exit & Checkout</h2>
+            <form onSubmit={otpSent ? handleVerifyOTP : handleSendOTP}>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
+                required
+              />
+              <input
+                type="text"
+                value={lotId}
+                onChange={(e) => setLotId(e.target.value)}
+                placeholder="Enter Lot ID"
+                required
+              />
+              {otpSent && (
+                <input
+                  type="text"
+                  value={otp}
+                  onChange={(e) => setOtp(e.target.value)}
+                  placeholder="Enter OTP"
+                  required
+                />
               )}
-              {activeContent === "checkout" && (
-                <div>
-                  <h2>Exit & Checkout - Send OTP</h2>
-                  <form onSubmit={otpSent ? handleVerifyOTP : handleSendOTP}>
-                    <input
-                      type="email"
-                      placeholder="Enter your email"
-                      value={email}
-                      onChange={handleEmailChange}
-                      required
-                    />
-                    <input
-                      type="text"
-                      placeholder="Enter Lot ID"
-                      value={lotId}
-                      onChange={handleLotIdChange}
-                      required
-                    />
-                    {otpSent && (
-                      <input
-                        type="text"
-                        placeholder="Enter OTP"
-                        value={otp}
-                        onChange={handleOtpChange}
-                        required
-                      />
-                    )}
-                    <button type="submit">
-                      {otpSent ? "Verify OTP" : "Send OTP"}
-                    </button>
-                  </form>
-                  {checkoutComplete && (
-                    <div className="checkout-info">
-                      <p className="total-cost">
-                        Total Amount: ${totalCost.toFixed(2)}
-                      </p>
-                      <button onClick={handleCheckout}>Pay & Checkout</button>
-                    </div>
-                  )}
-                </div>
-              )}
-              <button onClick={handleGoBack}>Go Back</button>
-            </div>
-          )}
-        </div>
-        <p className="site-description">
-          Welcome to the Parking Lot Management System, where you can easily
-          manage parking slots and optimize your parking experience.
-        </p>
-      </div>
+              <button type="submit">
+                {otpSent ? "Verify OTP" : "Send OTP"}
+              </button>
+            </form>
+
+            {checkoutReady && (
+              <div>
+                <p>Total: ${totalCost.toFixed(2)}</p>
+                <button onClick={handleCheckout}>Pay & Checkout</button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {activeTab === "history" && (
+          <div className="history-section">
+            <h2>Booking History</h2>
+            {history.length === 0 ? (
+              <p>No bookings found.</p>
+            ) : (
+              <ul className="booking-list">
+                {history.map((item) => (
+                  <li key={item._id}>
+                    Slot: {item.lotId} | Vehicle: {item.vehicleType} | Date:{" "}
+                    {new Date(item.createdAt).toLocaleString()} | Status:{" "}
+                    {item.status}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </main>
     </div>
   );
 };
