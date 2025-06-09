@@ -35,7 +35,6 @@ const AvailableSlotsPage = () => {
   const handleBookSlot = (lotId) => {
     setBookingInfo({ ...bookingInfo, lotId });
     setIsBooking(true);
-    // ✅ Scroll to the form after a slight delay to ensure it's rendered
     setTimeout(() => {
       if (formRef.current) {
         formRef.current.scrollIntoView({ behavior: "smooth" });
@@ -57,6 +56,7 @@ const AvailableSlotsPage = () => {
         {
           lotId,
           email,
+          vehicleType,
         }
       );
       alert(`Slot ${lotId} booked successfully for email ${email}!`);

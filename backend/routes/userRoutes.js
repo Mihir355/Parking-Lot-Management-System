@@ -3,6 +3,10 @@ const router = express.Router();
 const LotModel = require("../models/LotModel");
 const Ticket = require("../models/TicketModel");
 const mongoose = require("mongoose");
+const crypto = require("crypto");
+const Ticket = require("../models/Ticket");
+const QRCode = require("qrcode");
+const sendMail = require("../utils/sendMail");
 
 router.get("/available-slots/:vehicleType", async (req, res) => {
   const vehicleType = req.params.vehicleType;
@@ -20,56 +24,45 @@ router.get("/available-slots/:vehicleType", async (req, res) => {
 });
 
 router.post("/book-slot", async (req, res) => {
-  const { lotId, email } = req.body;
-
-  const session = await mongoose.startSession();
-  session.startTransaction();
+  const { vehicleType, email, lotId } = req.body;
 
   try {
-    const activeTicket = await Ticket.findOne({
-      email,
-      endTime: { $exists: false },
-    });
+    // Generate a unique token (used in QR)
+    const token = crypto.randomBytes(16).toString("hex");
 
-    if (activeTicket) {
-      await session.abortTransaction();
-      session.endSession();
-      return res.status(400).json({
-        error:
-          "You already have an active booking. Please check out before booking a new slot.",
-      });
-    }
-
-    const lot = await LotModel.findOneAndUpdate(
-      { lotId, availabilityStatus: "available" },
-      { availabilityStatus: "occupied" },
-      { new: true, session }
-    );
-
-    if (!lot) {
-      await session.abortTransaction();
-      session.endSession();
-      return res
-        .status(404)
-        .json({ error: "Lot already booked or not found." });
-    }
-
-    const ticket = new Ticket({
-      vehicleType: lot.vehicleType,
+    // Create the ticket
+    const newTicket = new Ticket({
+      vehicleType,
       email,
       lotId,
+      token, // token is unique
     });
 
-    await ticket.save({ session });
-    await session.commitTransaction();
-    session.endSession();
+    await newTicket.save();
 
-    res.status(200).json({ message: "Slot booked successfully", ticket });
+    // Generate QR code with token
+    const qrCodeDataURL = await QRCode.toDataURL(token);
+
+    // Send email with QR
+    await sendMail({
+      to: email,
+      subject: "Your Parking Ticket QR Code",
+      html: `
+        <h2>Parking Ticket Confirmed</h2>
+        <p>Vehicle Type: ${vehicleType}</p>
+        <p>Lot ID: ${lotId}</p>
+        <p>Please present this QR code at the gate:</p>
+        <img src="${qrCodeDataURL}" alt="QR Code" />
+      `,
+    });
+
+    res.json({
+      success: true,
+      message: "Booking confirmed, QR sent to email.",
+    });
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
-    console.error("Error booking slot:", error);
-    res.status(500).json({ error: "Failed to book slot." });
+    console.error("Booking error:", error);
+    res.status(500).json({ success: false, message: "Booking failed." });
   }
 });
 

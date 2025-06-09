@@ -78,13 +78,6 @@ const LandingPage = () => {
                 onChange={(e) => setName(e.target.value)}
                 required
               />
-              <input
-                type="password"
-                placeholder="Confirm Password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-              />
             </>
           )}
           <input
@@ -101,6 +94,15 @@ const LandingPage = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
           />
+          {!isLogin && (
+            <input
+              type="password"
+              placeholder="Confirm Password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              required
+            />
+          )}
           <button type="submit">{isLogin ? "Login" : "Sign Up"}</button>
         </form>
         <button onClick={toggleForm} className="toggle-button">
