@@ -4,7 +4,6 @@ const LotModel = require("../models/LotModel");
 const Ticket = require("../models/TicketModel");
 const mongoose = require("mongoose");
 const crypto = require("crypto");
-const Ticket = require("../models/Ticket");
 const QRCode = require("qrcode");
 const sendMail = require("../utils/sendMail");
 
