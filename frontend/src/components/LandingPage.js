@@ -3,10 +3,10 @@ import "../styling/landingpage.css";
 import axios from "axios";
 
 const LandingPage = () => {
-  const [isLogin, setIsLogin] = useState(true); // Toggle state
+  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState(""); // Only used for signup
+  const [name, setName] = useState("");
 
   const toggleForm = () => {
     setIsLogin((prev) => !prev);
@@ -19,15 +19,13 @@ const LandingPage = () => {
     e.preventDefault();
     try {
       if (isLogin) {
-        // Login request
         const response = await axios.post(
           "https://your-api.com/api/auth/login",
           { email, password }
         );
         alert("Login successful!");
-        console.log(response.data); // Handle token/session here
+        console.log(response.data);
       } else {
-        // Signup request
         const response = await axios.post(
           "https://your-api.com/api/auth/signup",
           { name, email, password }

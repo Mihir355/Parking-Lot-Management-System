@@ -2,11 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "../styling/homepage.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCheckCircle,
-  faSignOutAlt,
-  faLock,
-} from "@fortawesome/free-solid-svg-icons";
+import { faCheckCircle, faSignOutAlt } from "@fortawesome/free-solid-svg-icons"; // Removed faLock
 import axios from "axios";
 
 const Homepage = () => {
@@ -14,7 +10,7 @@ const Homepage = () => {
   const location = useLocation();
   const [activeContent, setActiveContent] = useState(null);
   const [vehicleType, setVehicleType] = useState("");
-  const [email, setEmail] = useState(""); // Changed to email
+  const [email, setEmail] = useState("");
   const [lotId, setLotId] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [otp, setOtp] = useState("");
@@ -28,11 +24,7 @@ const Homepage = () => {
   }, [location.state]);
 
   const handleCircleClick = (type) => {
-    if (type === "admin") {
-      navigate("/adminlogin");
-    } else {
-      setActiveContent(type);
-    }
+    setActiveContent(type);
   };
 
   const handleGoBack = () => {
@@ -42,22 +34,10 @@ const Homepage = () => {
     setCheckoutComplete(false);
   };
 
-  const handleVehicleTypeChange = (e) => {
-    setVehicleType(e.target.value);
-  };
-
-  const handleEmailChange = (e) => {
-    // Changed to email
-    setEmail(e.target.value);
-  };
-
-  const handleLotIdChange = (e) => {
-    setLotId(e.target.value);
-  };
-
-  const handleOtpChange = (e) => {
-    setOtp(e.target.value);
-  };
+  const handleVehicleTypeChange = (e) => setVehicleType(e.target.value);
+  const handleEmailChange = (e) => setEmail(e.target.value);
+  const handleLotIdChange = (e) => setLotId(e.target.value);
+  const handleOtpChange = (e) => setOtp(e.target.value);
 
   const handleCheckAvailability = (e) => {
     e.preventDefault();
@@ -70,7 +50,7 @@ const Homepage = () => {
       const response = await axios.post(
         "https://parking-lot-management-system-xf6h.onrender.com/api/otp/send-otp",
         {
-          email, // Using email instead of phone number
+          email,
           lotId,
         }
       );
@@ -92,16 +72,14 @@ const Homepage = () => {
       const response = await axios.post(
         "https://parking-lot-management-system-xf6h.onrender.com/api/otp/verify-otp",
         {
-          email, // Using email instead of phone number
+          email,
           lotId,
           otp,
         }
       );
 
       if (response.data.success) {
-        const cost = response.data.totalCost;
-        setTotalCost(cost);
-
+        setTotalCost(response.data.totalCost);
         alert("OTP verified successfully. Ready to checkout.");
         setCheckoutComplete(true);
       } else {
@@ -128,7 +106,7 @@ const Homepage = () => {
       setActiveContent(null);
       setOtpSent(false);
       setOtp("");
-      setEmail(""); // Clear email field
+      setEmail("");
       setLotId("");
       setTotalCost(0);
       setCheckoutComplete(false);
@@ -174,17 +152,6 @@ const Homepage = () => {
                   <h2>Exit & Checkout</h2>
                 </div>
               </div>
-              <div
-                className="whole-description"
-                onClick={() => handleCircleClick("admin")}
-              >
-                <div className="circle">
-                  <FontAwesomeIcon icon={faLock} size="4x" />
-                </div>
-                <div className="desc">
-                  <h2>Admin Login</h2>
-                </div>
-              </div>
             </div>
           ) : (
             <div className="active-content">
@@ -215,7 +182,7 @@ const Homepage = () => {
                   <h2>Exit & Checkout - Send OTP</h2>
                   <form onSubmit={otpSent ? handleVerifyOTP : handleSendOTP}>
                     <input
-                      type="email" // Changed to email input
+                      type="email"
                       placeholder="Enter your email"
                       value={email}
                       onChange={handleEmailChange}
