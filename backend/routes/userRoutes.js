@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const LotModel = require("../models/LotModel");
 const Ticket = require("../models/TicketModel");
-const mongoose = require("mongoose");
 const crypto = require("crypto");
 const QRCode = require("qrcode");
 const sendMail = require("../utils/sendMail");
@@ -34,25 +33,36 @@ router.post("/book-slot", async (req, res) => {
       vehicleType,
       email,
       lotId,
-      token, // token is unique
+      token,
     });
 
     await newTicket.save();
 
-    // Generate QR code with token
+    // Generate QR code as a Data URL
     const qrCodeDataURL = await QRCode.toDataURL(token);
 
-    // Send email with QR
+    // Convert Data URL to a buffer
+    const base64Data = qrCodeDataURL.split(",")[1];
+    const qrBuffer = Buffer.from(base64Data, "base64");
+
+    // Send email with QR code as inline image
     await sendMail({
       to: email,
       subject: "Your Parking Ticket QR Code",
       html: `
         <h2>Parking Ticket Confirmed</h2>
-        <p>Vehicle Type: ${vehicleType}</p>
-        <p>Lot ID: ${lotId}</p>
+        <p><strong>Vehicle Type:</strong> ${vehicleType}</p>
+        <p><strong>Lot ID:</strong> ${lotId}</p>
         <p>Please present this QR code at the gate:</p>
-        <img src="${qrCodeDataURL}" alt="QR Code" />
+        <img src="cid:qrcode" alt="QR Code" />
       `,
+      attachments: [
+        {
+          filename: "qrcode.png",
+          content: qrBuffer,
+          cid: "qrcode", // referenced in the <img src="cid:qrcode">
+        },
+      ],
     });
 
     res.json({
