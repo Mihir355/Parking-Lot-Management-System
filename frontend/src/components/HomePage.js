@@ -5,7 +5,6 @@ import axios from "axios";
 
 const Homepage = () => {
   const navigate = useNavigate();
-
   const [vehicleType, setVehicleType] = useState("");
   const [email, setEmail] = useState(localStorage.getItem("userEmail") || "");
   const [lotId, setLotId] = useState("");

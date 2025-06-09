@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import QrReader from "react-qr-reader";
 import "../styling/admindashboard.css";
 
 const AdminDashboard = () => {
@@ -11,6 +12,8 @@ const AdminDashboard = () => {
   const [prices, setPrices] = useState([]);
   const [updatedPrices, setUpdatedPrices] = useState({});
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [qrScanResult, setQrScanResult] = useState("");
+  const [qrStatus, setQrStatus] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -36,7 +39,7 @@ const AdminDashboard = () => {
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem("isAdminAuthenticated"); // ✅ Clear this too
+    localStorage.removeItem("isAdminAuthenticated");
     alert("You have been logged out.");
     navigate("/adminlogin");
   };
@@ -74,6 +77,34 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleQRScan = async (token) => {
+    if (token && token !== qrScanResult) {
+      setQrScanResult(token);
+      setQrStatus("Verifying QR...");
+
+      try {
+        const response = await axios.post(
+          "https://parking-lot-management-system-xf6h.onrender.com/api/admin/verify-qr",
+          { token }
+        );
+
+        if (response.data.success) {
+          setQrStatus("✅ QR Verified. Parking session started.");
+        } else {
+          setQrStatus(`❌ Verification failed: ${response.data.message}`);
+        }
+      } catch (err) {
+        console.error("QR Verification Error:", err);
+        setQrStatus("❌ Error verifying QR code.");
+      }
+    }
+  };
+
+  const handleQRError = (err) => {
+    console.error("QR Reader Error:", err);
+    setQrStatus("❌ Could not access camera.");
+  };
+
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
@@ -91,6 +122,7 @@ const AdminDashboard = () => {
           <li onClick={() => setSelectedOption("change-rates")}>
             Change Rates
           </li>
+          <li onClick={() => setSelectedOption("scan-qr")}>Scan QR</li>
           <li>
             <button onClick={handleLogout} className="logout-button">
               Log Out
@@ -98,6 +130,7 @@ const AdminDashboard = () => {
           </li>
         </ul>
       </nav>
+
       <div className="content">
         {selectedOption === "home" && (
           <>
@@ -112,6 +145,7 @@ const AdminDashboard = () => {
             </ul>
           </>
         )}
+
         {selectedOption === "add-slots" && (
           <div className="add-slots-form">
             <h2>Add Slots</h2>
@@ -145,14 +179,14 @@ const AdminDashboard = () => {
             </button>
           </div>
         )}
+
         {selectedOption === "change-rates" && (
           <div className="change-rates-form">
             <h2>Change Rates</h2>
             <ul>
               {prices.map((price) => (
                 <li key={price.vehicleType}>
-                  {price.vehicleType}:
-                  <span> Current Price: ${price.price}</span>
+                  {price.vehicleType}: Current Price: ${price.price}
                   <input
                     type="number"
                     placeholder="New Price"
@@ -167,6 +201,26 @@ const AdminDashboard = () => {
               ))}
             </ul>
             <button onClick={handleUpdatePrices}>Update Prices</button>
+          </div>
+        )}
+
+        {selectedOption === "scan-qr" && (
+          <div className="qr-scanner-section">
+            <h2>Scan User QR Code</h2>
+            <QrReader
+              delay={300}
+              onError={handleQRError}
+              onScan={handleQRScan}
+              style={{ width: "300px", margin: "0 auto" }}
+            />
+            <p>
+              <strong>Status:</strong> {qrStatus}
+            </p>
+            {qrScanResult && (
+              <p>
+                <strong>Scanned Token:</strong> <code>{qrScanResult}</code>
+              </p>
+            )}
           </div>
         )}
       </div>

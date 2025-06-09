@@ -1,9 +1,51 @@
 const express = require("express");
 const router = express.Router();
-const dotenv = require("dotenv");
 const LotModel = require("../models/LotModel");
 const PriceModel = require("../models/PriceModel");
+const Ticket = require("../models/TicketModel");
+const User = require("../models/UserModel");
+const dotenv = require("dotenv");
 dotenv.config();
+
+router.post("/verify-qr", async (req, res) => {
+  const { token } = req.body;
+
+  try {
+    const ticket = await Ticket.findOne({ token });
+    if (!ticket) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Ticket not found" });
+    }
+
+    if (ticket.startTime) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Ticket already used" });
+    }
+
+    // Start timer
+    ticket.startTime = new Date();
+    await ticket.save();
+
+    // Add ticket to user’s bookings (optional)
+    const user = await User.findOne({ email: ticket.email });
+    if (user && !user.bookings.includes(ticket._id)) {
+      user.bookings.push(ticket._id);
+      await user.save();
+    }
+
+    return res.json({
+      success: true,
+      message: "QR verified and timer started.",
+    });
+  } catch (err) {
+    console.error("QR verification error:", err);
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal server error" });
+  }
+});
 
 router.post("/login", (req, res) => {
   const { username, password } = req.body;
