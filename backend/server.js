@@ -9,6 +9,7 @@ const userRoutes = require("./routes/userRoutes");
 const otpRoutes = require("./routes/otpRoutes");
 const lotRoutes = require("./routes/lotRoutes");
 const authRoutes = require("./routes/authRoutes");
+const bookingRoutes = require("./routes/bookingRoutes");
 
 const app = express();
 app.use(express.json());
@@ -27,6 +28,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/otp", otpRoutes);
 app.use("/api/lots", lotRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/bookings", bookingRoutes);
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/build")));
