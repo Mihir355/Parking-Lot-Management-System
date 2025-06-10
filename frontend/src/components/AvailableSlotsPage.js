@@ -61,7 +61,7 @@ const AvailableSlotsPage = () => {
       );
       alert(`Slot ${lotId} booked successfully for email ${email}!`);
       setIsBooking(false);
-      navigate("/");
+      navigate("/home");
     } catch (error) {
       console.error("Error booking slot:", error);
       alert("Failed to book slot. Please try again.");
