@@ -15,6 +15,7 @@ const bookingRoutes = require("./routes/bookingRoutes");
 const app = express();
 app.use(express.json());
 app.use(cors());
+app.set("trust proxy", 1);
 
 mongoose
   .connect(process.env.MONGO_URI, {
