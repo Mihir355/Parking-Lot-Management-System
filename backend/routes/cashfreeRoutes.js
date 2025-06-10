@@ -26,7 +26,7 @@ router.post("/create-order", async (req, res) => {
       {
         headers: {
           "Content-Type": "application/json",
-          "x-api-version": "2022-09-01",
+          "x-api-version": "2025-01-01",
           "x-client-id": APP_ID,
           "x-client-secret": SECRET_KEY,
         },
