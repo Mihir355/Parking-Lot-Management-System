@@ -28,16 +28,32 @@ router.post("/verify-qr", async (req, res) => {
     ticket.startTime = new Date();
     await ticket.save();
 
-    // Add ticket to user’s bookings (optional)
-    const user = await User.findOne({ email: ticket.email });
-    if (user && !user.bookings.includes(ticket._id)) {
-      user.bookings.push(ticket._id);
-      await user.save();
+    // Update lot status to "occupied"
+    await LotModel.findOneAndUpdate(
+      { lotId: ticket.lotId },
+      { availabilityStatus: "occupied" }
+    );
+
+    // Normalize and find user
+    const user = await User.findOne({
+      email: ticket.email.toLowerCase().trim(),
+    });
+
+    // Add ticket to user’s bookings
+    if (user) {
+      const isAlreadyBooked = user.bookings.some(
+        (bookingId) => bookingId.toString() === ticket._id.toString()
+      );
+
+      if (!isAlreadyBooked) {
+        user.bookings.push(ticket._id);
+        await user.save();
+      }
     }
 
     return res.json({
       success: true,
-      message: "QR verified and timer started.",
+      message: "QR verified, timer started, and lot marked as occupied.",
     });
   } catch (err) {
     console.error("QR verification error:", err);

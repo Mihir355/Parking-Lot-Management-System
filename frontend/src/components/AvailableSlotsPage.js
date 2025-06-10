@@ -111,7 +111,7 @@ const AvailableSlotsPage = () => {
 
       <button
         onClick={() =>
-          navigate("/", { state: { activeContent: "availability" } })
+          navigate("/home", { state: { activeContent: "availability" } })
         }
         className="go-back-button"
       >
