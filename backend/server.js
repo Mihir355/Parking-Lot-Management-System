@@ -31,7 +31,7 @@ app.use("/api/otp", otpRoutes);
 app.use("/api/lots", lotRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/bookings", bookingRoutes);
-app.use("/api/payment", cashfreeRoutes);
+app.use("/api/cashfree", cashfreeRoutes);
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../frontend/build")));
