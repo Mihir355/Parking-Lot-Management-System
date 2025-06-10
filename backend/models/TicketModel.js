@@ -7,7 +7,7 @@ const ticketSchema = new mongoose.Schema({
   },
   startTime: {
     type: Date,
-    default: null, // Timer only starts after QR scan
+    default: null,
   },
   email: {
     type: String,

@@ -104,6 +104,52 @@ const Homepage = () => {
       alert("Checkout failed.");
     }
   };
+  const handlePayment = async () => {
+    if (!lotId || !email) {
+      return alert("Please enter Lot ID and Email first.");
+    }
+
+    try {
+      // 1. Create order on backend
+      const orderResponse = await axios.post(
+        "https://parking-lot-management-system-xf6h.onrender.com/api/cashfree/create-order",
+        {
+          orderId: `order_${Date.now()}`, // unique order ID
+          orderAmount: totalCost,
+          customerName: userName || "Customer",
+          customerEmail: email,
+        }
+      );
+
+      const { order_token } = orderResponse.data;
+
+      if (!order_token) {
+        return alert("Failed to get order token.");
+      }
+
+      // 2. Use Cashfree SDK to launch payment
+      window.CFPayment.init({
+        orderToken: order_token,
+        onSuccess: (data) => {
+          console.log("Payment Success:", data);
+          alert("Payment Successful!");
+          // You can update backend booking status here if needed
+        },
+        onFailure: (err) => {
+          console.error("Payment Failed:", err);
+          alert("Payment Failed. Please try again.");
+        },
+        onDismiss: () => {
+          alert("Payment popup closed.");
+        },
+      });
+
+      window.CFPayment.open();
+    } catch (error) {
+      console.error("Error in payment:", error);
+      alert("Payment initiation failed.");
+    }
+  };
 
   return (
     <div className="homepage-wrapper">
@@ -190,7 +236,7 @@ const Homepage = () => {
             {checkoutReady && (
               <div>
                 <p>Total: ${totalCost.toFixed(2)}</p>
-                <button onClick={handleCheckout}>Pay & Checkout</button>
+                <button onClick={handlePayment}>Pay & Checkout</button>
               </div>
             )}
           </div>
