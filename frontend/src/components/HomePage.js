@@ -206,7 +206,7 @@ const Homepage = () => {
                 {history.map((item) => (
                   <li key={item._id}>
                     Slot: {item.lotId} | Vehicle: {item.vehicleType} | Date:{" "}
-                    {new Date(item.createdAt).toLocaleString()} | Status:{" "}
+                    {new Date(item.startTime).toLocaleString()} | Status:{" "}
                     {item.status}
                   </li>
                 ))}

@@ -1,7 +1,3 @@
-const express = require("express");
-const router = express.Router();
-const User = require("../models/UserModel");
-
 router.get("/user/:userId", async (req, res) => {
   const { userId } = req.params;
 
@@ -14,7 +10,15 @@ router.get("/user/:userId", async (req, res) => {
         .json({ success: false, message: "User not found." });
     }
 
-    res.json({ success: true, bookings: user.bookings });
+    const bookingsWithStatus = user.bookings.map((booking) => ({
+      _id: booking._id,
+      lotId: booking.lotId,
+      vehicleType: booking.vehicleType,
+      startTime: booking.startTime,
+      status: booking.endTime ? "Checked Out" : "In Use",
+    }));
+
+    res.json({ success: true, bookings: bookingsWithStatus });
   } catch (error) {
     console.error("Error fetching booking history:", error);
     res
@@ -22,5 +26,3 @@ router.get("/user/:userId", async (req, res) => {
       .json({ success: false, message: "Failed to fetch bookings." });
   }
 });
-
-module.exports = router;
