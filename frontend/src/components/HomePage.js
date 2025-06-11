@@ -129,6 +129,11 @@ const Homepage = () => {
         return alert("Failed to get payment session ID.");
       }
 
+      if (!window.CFPayment || typeof window.CFPayment.init !== "function") {
+        alert("Payment SDK not loaded properly. Please refresh the page.");
+        return;
+      }
+
       window.CFPayment.init({
         paymentSessionId: payment_session_id, // ✅ updated key
         onSuccess: (data) => {
