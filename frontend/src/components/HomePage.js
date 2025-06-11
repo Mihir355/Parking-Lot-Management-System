@@ -123,19 +123,17 @@ const Homepage = () => {
         }
       );
 
-      const { order_token } = orderResponse.data;
+      const { payment_session_id } = orderResponse.data;
 
-      if (!order_token) {
-        return alert("Failed to get order token.");
+      if (!payment_session_id) {
+        return alert("Failed to get payment session ID.");
       }
 
-      // 2. Use Cashfree SDK to launch payment
       window.CFPayment.init({
-        orderToken: order_token,
+        paymentSessionId: payment_session_id, // ✅ updated key
         onSuccess: (data) => {
           console.log("Payment Success:", data);
           alert("Payment Successful!");
-          // You can update backend booking status here if needed
         },
         onFailure: (err) => {
           console.error("Payment Failed:", err);
