@@ -15,13 +15,14 @@ const Homepage = () => {
   const [activeTab, setActiveTab] = useState("book");
   const [history, setHistory] = useState([]);
   const [phone, setPhone] = useState("");
-  const [isCFReady, setIsCFReady] = useState(false); // 🚀 New state
+  const [isCFReady, setIsCFReady] = useState(false);
 
   const userId = localStorage.getItem("userId");
   const userName = localStorage.getItem("userName");
 
   // 🚀 Load Cashfree SDK dynamically
   useEffect(() => {
+    let timeout;
     if (!window.CFPayment) {
       const script = document.createElement("script");
       script.src = "https://sdk.cashfree.com/js/ui/2.0.0/cashfree.prod.js";
@@ -31,10 +32,21 @@ const Homepage = () => {
         const interval = setInterval(() => {
           if (window.CFPayment && typeof window.CFPayment.init === "function") {
             console.log("✅ CFPayment is now ready.");
+            console.log("CFPayment object:", window.CFPayment);
             setIsCFReady(true);
             clearInterval(interval);
+            clearTimeout(timeout);
           }
-        }, 100); // Check every 100ms
+        }, 100);
+
+        timeout = setTimeout(() => {
+          if (
+            !window.CFPayment ||
+            typeof window.CFPayment.init !== "function"
+          ) {
+            console.error("❌ CFPayment SDK load timeout.");
+          }
+        }, 5000);
       };
 
       script.onerror = () => {
@@ -42,10 +54,8 @@ const Homepage = () => {
       };
 
       document.body.appendChild(script);
-    } else if (
-      window.CFPayment &&
-      typeof window.CFPayment.init === "function"
-    ) {
+    } else if (typeof window.CFPayment.init === "function") {
+      console.log("⚠️ CFPayment was already available.");
       setIsCFReady(true);
     }
   }, []);
@@ -73,7 +83,7 @@ const Homepage = () => {
     }
   };
 
-  const handleBookSubmit = async (e) => {
+  const handleBookSubmit = (e) => {
     e.preventDefault();
     if (!vehicleType) return alert("Please select a vehicle type.");
     navigate("/available-slots", { state: { vehicleType } });
@@ -123,6 +133,8 @@ const Homepage = () => {
       return alert("Please enter all required fields.");
     }
 
+    console.log("🔍 CFPayment in handlePayment:", window.CFPayment);
+
     try {
       const orderResponse = await axios.post(
         "https://parking-lot-management-system-xf6h.onrender.com/api/cashfree/create-order",
@@ -142,7 +154,7 @@ const Homepage = () => {
       }
 
       if (!window.CFPayment || typeof window.CFPayment.init !== "function") {
-        console.error("CFPayment is not defined or improperly loaded.");
+        console.error("❌ CFPayment not initialized.");
         alert("Payment SDK not loaded. Try refreshing the page.");
         return;
       }
@@ -161,7 +173,7 @@ const Homepage = () => {
           setTotalCost(0);
           setPhone("");
           setActiveTab("history");
-          fetchBookingHistory(); // Refresh history tab
+          fetchBookingHistory();
         },
         onFailure: (err) => {
           console.error("❌ Payment Failed:", err);
