@@ -26,15 +26,26 @@ const Homepage = () => {
       const script = document.createElement("script");
       script.src = "https://sdk.cashfree.com/js/ui/2.0.0/cashfree.prod.js";
       script.async = true;
+
       script.onload = () => {
-        console.log("✅ Cashfree SDK loaded");
-        setIsCFReady(true);
+        const interval = setInterval(() => {
+          if (window.CFPayment && typeof window.CFPayment.init === "function") {
+            console.log("✅ CFPayment is now ready.");
+            setIsCFReady(true);
+            clearInterval(interval);
+          }
+        }, 100); // Check every 100ms
       };
+
       script.onerror = () => {
         console.error("❌ Failed to load Cashfree SDK");
       };
+
       document.body.appendChild(script);
-    } else {
+    } else if (
+      window.CFPayment &&
+      typeof window.CFPayment.init === "function"
+    ) {
       setIsCFReady(true);
     }
   }, []);
