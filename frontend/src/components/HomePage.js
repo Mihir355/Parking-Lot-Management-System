@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styling/homepage.css";
 import axios from "axios";
+import { load } from "@cashfreepayments/cashfree-js"; // ✅ NEW: Import Cashfree SDK loader
 
 const Homepage = () => {
   const navigate = useNavigate();
@@ -20,44 +21,23 @@ const Homepage = () => {
   const userId = localStorage.getItem("userId");
   const userName = localStorage.getItem("userName");
 
-  // 🚀 Load Cashfree SDK dynamically
+  // ✅ Initialize Cashfree SDK on mount
   useEffect(() => {
-    let timeout;
-    if (!window.CFPayment) {
-      const script = document.createElement("script");
-      script.src = "https://sdk.cashfree.com/js/v3/cashfree.js";
-      script.async = true;
-
-      script.onload = () => {
-        const interval = setInterval(() => {
-          if (window.CFPayment && typeof window.CFPayment.init === "function") {
-            console.log("✅ CFPayment is now ready.");
-            console.log("CFPayment object:", window.CFPayment);
-            setIsCFReady(true);
-            clearInterval(interval);
-            clearTimeout(timeout);
-          }
-        }, 100);
-
-        timeout = setTimeout(() => {
-          if (
-            !window.CFPayment ||
-            typeof window.CFPayment.init !== "function"
-          ) {
-            console.error("❌ CFPayment SDK load timeout.");
-          }
-        }, 5000);
-      };
-
-      script.onerror = () => {
-        console.error("❌ Failed to load Cashfree SDK");
-      };
-
-      document.body.appendChild(script);
-    } else if (typeof window.CFPayment.init === "function") {
-      console.log("⚠️ CFPayment was already available.");
-      setIsCFReady(true);
-    }
+    const initCashfree = async () => {
+      try {
+        const cfInstance = await load({ mode: "sandbox" }); // change to "production" when live
+        if (cfInstance) {
+          window.cfInstance = cfInstance;
+          setIsCFReady(true);
+          console.log("✅ Cashfree SDK loaded");
+        } else {
+          console.error("⚠️ Cashfree SDK returned null (SSR?)");
+        }
+      } catch (err) {
+        console.error("❌ Failed to initialize Cashfree:", err);
+      }
+    };
+    initCashfree();
   }, []);
 
   useEffect(() => {
@@ -133,8 +113,6 @@ const Homepage = () => {
       return alert("Please enter all required fields.");
     }
 
-    console.log("🔍 CFPayment in handlePayment:", window.CFPayment);
-
     try {
       const orderResponse = await axios.post(
         "https://parking-lot-management-system-xf6h.onrender.com/api/cashfree/create-order",
@@ -153,19 +131,19 @@ const Homepage = () => {
         return alert("Failed to get payment session ID.");
       }
 
-      if (!window.CFPayment || typeof window.CFPayment.init !== "function") {
-        console.error("❌ CFPayment not initialized.");
-        alert("Payment SDK not loaded. Try refreshing the page.");
-        return;
+      if (!window.cfInstance) {
+        return alert("Cashfree SDK not loaded.");
       }
 
-      window.CFPayment.init({
+      // ✅ Use SDK's checkout method
+      window.cfInstance.checkout({
         paymentSessionId: payment_session_id,
+        redirectTarget: "_self", // or "_popup", "_blank"
         onSuccess: (data) => {
           console.log("✅ Payment Success:", data);
           alert("✅ Payment Successful!");
 
-          // Reset state after payment
+          // Reset state
           setOtp("");
           setOtpSent(false);
           setCheckoutReady(false);
@@ -183,8 +161,6 @@ const Homepage = () => {
           alert("⚠️ Payment popup closed.");
         },
       });
-
-      window.CFPayment.open();
     } catch (error) {
       console.error("Error in payment:", error);
       alert("Payment initiation failed.");
