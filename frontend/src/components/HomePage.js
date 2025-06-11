@@ -15,23 +15,27 @@ const Homepage = () => {
   const [activeTab, setActiveTab] = useState("book");
   const [history, setHistory] = useState([]);
   const [phone, setPhone] = useState("");
+  const [isCFReady, setIsCFReady] = useState(false); // 🚀 New state
 
   const userId = localStorage.getItem("userId");
   const userName = localStorage.getItem("userName");
 
-  // ✅ Load Cashfree SDK explicitly on mount
+  // 🚀 Load Cashfree SDK dynamically
   useEffect(() => {
     if (!window.CFPayment) {
       const script = document.createElement("script");
       script.src = "https://sdk.cashfree.com/js/ui/2.0.0/cashfree.prod.js";
       script.async = true;
       script.onload = () => {
-        console.log("✅ Cashfree SDK loaded successfully.");
+        console.log("✅ Cashfree SDK loaded");
+        setIsCFReady(true);
       };
       script.onerror = () => {
-        console.error("❌ Failed to load Cashfree SDK.");
+        console.error("❌ Failed to load Cashfree SDK");
       };
       document.body.appendChild(script);
+    } else {
+      setIsCFReady(true);
     }
   }, []);
 
@@ -61,7 +65,6 @@ const Homepage = () => {
   const handleBookSubmit = async (e) => {
     e.preventDefault();
     if (!vehicleType) return alert("Please select a vehicle type.");
-
     navigate("/available-slots", { state: { vehicleType } });
   };
 
@@ -104,27 +107,9 @@ const Homepage = () => {
     }
   };
 
-  const handleCheckout = async () => {
-    try {
-      await axios.put(
-        `https://parking-lot-management-system-xf6h.onrender.com/api/lots/${lotId}`,
-        { availabilityStatus: "available" }
-      );
-      alert(`Checkout successful. Paid $${totalCost.toFixed(2)}.`);
-      setOtpSent(false);
-      setCheckoutReady(false);
-      setOtp("");
-      setLotId("");
-      setTotalCost(0);
-    } catch (err) {
-      console.error(err);
-      alert("Checkout failed.");
-    }
-  };
-
   const handlePayment = async () => {
-    if (!lotId || !email) {
-      return alert("Please enter Lot ID and Email first.");
+    if (!lotId || !email || !phone) {
+      return alert("Please enter all required fields.");
     }
 
     try {
@@ -146,7 +131,8 @@ const Homepage = () => {
       }
 
       if (!window.CFPayment || typeof window.CFPayment.init !== "function") {
-        alert("Payment SDK not loaded properly. Please refresh the page.");
+        console.error("CFPayment is not defined or improperly loaded.");
+        alert("Payment SDK not loaded. Try refreshing the page.");
         return;
       }
 
@@ -155,7 +141,6 @@ const Homepage = () => {
         onSuccess: (data) => {
           console.log("Payment Success:", data);
           alert("Payment Successful!");
-          handleCheckout(); // ✅ Proceed to checkout after success
         },
         onFailure: (err) => {
           console.error("Payment Failed:", err);
@@ -265,9 +250,12 @@ const Homepage = () => {
                   placeholder="Enter your 10-digit phone number"
                   required
                 />
+                {!isCFReady && <p>Loading payment gateway...</p>}
                 <button
                   onClick={handlePayment}
-                  disabled={phone.length !== 10 || !/^\d{10}$/.test(phone)}
+                  disabled={
+                    !isCFReady || phone.length !== 10 || !/^\d{10}$/.test(phone)
+                  }
                 >
                   Pay & Checkout
                 </button>
