@@ -19,6 +19,22 @@ const Homepage = () => {
   const userId = localStorage.getItem("userId");
   const userName = localStorage.getItem("userName");
 
+  // ✅ Load Cashfree SDK explicitly on mount
+  useEffect(() => {
+    if (!window.CFPayment) {
+      const script = document.createElement("script");
+      script.src = "https://sdk.cashfree.com/js/ui/2.0.0/cashfree.prod.js";
+      script.async = true;
+      script.onload = () => {
+        console.log("✅ Cashfree SDK loaded successfully.");
+      };
+      script.onerror = () => {
+        console.error("❌ Failed to load Cashfree SDK.");
+      };
+      document.body.appendChild(script);
+    }
+  }, []);
+
   useEffect(() => {
     if (activeTab === "history") {
       fetchBookingHistory();
@@ -105,13 +121,13 @@ const Homepage = () => {
       alert("Checkout failed.");
     }
   };
+
   const handlePayment = async () => {
     if (!lotId || !email) {
       return alert("Please enter Lot ID and Email first.");
     }
 
     try {
-      // 1. Create order on backend
       const orderResponse = await axios.post(
         "https://parking-lot-management-system-xf6h.onrender.com/api/cashfree/create-order",
         {
@@ -119,7 +135,7 @@ const Homepage = () => {
           orderAmount: totalCost,
           customerName: userName || "Customer",
           customerEmail: email,
-          customerPhone: phone, // ✅ include phone number
+          customerPhone: phone,
         }
       );
 
@@ -135,10 +151,11 @@ const Homepage = () => {
       }
 
       window.CFPayment.init({
-        paymentSessionId: payment_session_id, // ✅ updated key
+        paymentSessionId: payment_session_id,
         onSuccess: (data) => {
           console.log("Payment Success:", data);
           alert("Payment Successful!");
+          handleCheckout(); // ✅ Proceed to checkout after success
         },
         onFailure: (err) => {
           console.error("Payment Failed:", err);
