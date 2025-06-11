@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import "../styling/homepage.css";
 import axios from "axios";
-import { load } from "@cashfreepayments/cashfree-js"; // ✅ NEW: Import Cashfree SDK loader
+import { load } from "@cashfreepayments/cashfree-js";
 
 const Homepage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const [vehicleType, setVehicleType] = useState("");
   const [email, setEmail] = useState(localStorage.getItem("userEmail") || "");
   const [lotId, setLotId] = useState("");
@@ -21,25 +23,46 @@ const Homepage = () => {
   const userId = localStorage.getItem("userId");
   const userName = localStorage.getItem("userName");
 
-  // ✅ Initialize Cashfree SDK on mount
+  // ✅ Load Cashfree SDK on mount (only once)
   useEffect(() => {
     const initCashfree = async () => {
+      if (window.cfInstance) {
+        console.log("⚠️ Cashfree SDK already loaded");
+        setIsCFReady(true);
+        return;
+      }
+
       try {
         const cfInstance = await load({ mode: "sandbox" }); // change to "production" when live
         if (cfInstance) {
           window.cfInstance = cfInstance;
           setIsCFReady(true);
           console.log("✅ Cashfree SDK loaded");
-        } else {
-          console.error("⚠️ Cashfree SDK returned null (SSR?)");
         }
       } catch (err) {
-        console.error("❌ Failed to initialize Cashfree:", err);
+        console.error("❌ Failed to load Cashfree SDK:", err);
       }
     };
+
     initCashfree();
   }, []);
 
+  // ✅ Handle return from Cashfree with order_id param
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const orderId = params.get("order_id");
+
+    if (orderId) {
+      alert(`✅ Payment confirmed for Order ID: ${orderId}`);
+      setActiveTab("history");
+      fetchBookingHistory();
+
+      // Clean up URL
+      window.history.replaceState({}, document.title, "/home");
+    }
+  }, [location]);
+
+  // Fetch booking history when tab is active
   useEffect(() => {
     if (activeTab === "history") {
       fetchBookingHistory();
@@ -114,10 +137,11 @@ const Homepage = () => {
     }
 
     try {
+      const orderId = `order_${Date.now()}`;
       const orderResponse = await axios.post(
         "https://parking-lot-management-system-xf6h.onrender.com/api/cashfree/create-order",
         {
-          orderId: `order_${Date.now()}`,
+          orderId,
           orderAmount: totalCost,
           customerName: userName || "Customer",
           customerEmail: email,
@@ -135,23 +159,20 @@ const Homepage = () => {
         return alert("Cashfree SDK not loaded.");
       }
 
-      // ✅ Use SDK's checkout method
       window.cfInstance.checkout({
         paymentSessionId: payment_session_id,
-        redirectTarget: "_self", // or "_popup", "_blank"
+        redirectTarget: "_self",
         onSuccess: (data) => {
           console.log("✅ Payment Success:", data);
           alert("✅ Payment Successful!");
 
-          // Reset state
+          // Reset form
           setOtp("");
           setOtpSent(false);
           setCheckoutReady(false);
           setLotId("");
           setTotalCost(0);
           setPhone("");
-          setActiveTab("history");
-          fetchBookingHistory();
         },
         onFailure: (err) => {
           console.error("❌ Payment Failed:", err);
@@ -251,7 +272,7 @@ const Homepage = () => {
 
             {checkoutReady && (
               <div>
-                <p>Total: ${totalCost.toFixed(2)}</p>
+                <p>Total: ₹{totalCost.toFixed(2)}</p>
                 <input
                   type="tel"
                   value={phone}
