@@ -150,15 +150,25 @@ const Homepage = () => {
       window.CFPayment.init({
         paymentSessionId: payment_session_id,
         onSuccess: (data) => {
-          console.log("Payment Success:", data);
-          alert("Payment Successful!");
+          console.log("✅ Payment Success:", data);
+          alert("✅ Payment Successful!");
+
+          // Reset state after payment
+          setOtp("");
+          setOtpSent(false);
+          setCheckoutReady(false);
+          setLotId("");
+          setTotalCost(0);
+          setPhone("");
+          setActiveTab("history");
+          fetchBookingHistory(); // Refresh history tab
         },
         onFailure: (err) => {
-          console.error("Payment Failed:", err);
-          alert("Payment Failed. Please try again.");
+          console.error("❌ Payment Failed:", err);
+          alert("❌ Payment Failed. Please try again.");
         },
         onDismiss: () => {
-          alert("Payment popup closed.");
+          alert("⚠️ Payment popup closed.");
         },
       });
 
