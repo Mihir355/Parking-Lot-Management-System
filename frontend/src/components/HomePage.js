@@ -14,6 +14,7 @@ const Homepage = () => {
   const [totalCost, setTotalCost] = useState(0);
   const [activeTab, setActiveTab] = useState("book");
   const [history, setHistory] = useState([]);
+  const [phone, setPhone] = useState("");
 
   const userId = localStorage.getItem("userId");
   const userName = localStorage.getItem("userName");
@@ -114,10 +115,11 @@ const Homepage = () => {
       const orderResponse = await axios.post(
         "https://parking-lot-management-system-xf6h.onrender.com/api/cashfree/create-order",
         {
-          orderId: `order_${Date.now()}`, // unique order ID
+          orderId: `order_${Date.now()}`,
           orderAmount: totalCost,
           customerName: userName || "Customer",
           customerEmail: email,
+          customerPhone: phone, // ✅ include phone number
         }
       );
 
@@ -236,7 +238,19 @@ const Homepage = () => {
             {checkoutReady && (
               <div>
                 <p>Total: ${totalCost.toFixed(2)}</p>
-                <button onClick={handlePayment}>Pay & Checkout</button>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="Enter your 10-digit phone number"
+                  required
+                />
+                <button
+                  onClick={handlePayment}
+                  disabled={phone.length !== 10 || !/^\d{10}$/.test(phone)}
+                >
+                  Pay & Checkout
+                </button>
               </div>
             )}
           </div>

@@ -10,7 +10,8 @@ const SECRET_KEY = process.env.CASHFREE_SECRET_KEY;
 const BASE_URL = process.env.CASHFREE_BASE_URL;
 
 router.post("/create-order", async (req, res) => {
-  const { orderId, orderAmount, customerName, customerEmail } = req.body;
+  const { orderId, orderAmount, customerName, customerEmail, customerPhone } =
+    req.body;
 
   // ✅ Sanitize customer_id to remove invalid characters
   const sanitizedCustomerId = customerEmail.replace(/[^a-zA-Z0-9_-]/g, "_");
@@ -23,9 +24,10 @@ router.post("/create-order", async (req, res) => {
         order_amount: orderAmount,
         order_currency: "INR",
         customer_details: {
-          customer_id: sanitizedCustomerId, // ✅ use the sanitized ID
+          customer_id: sanitizedCustomerId,
           customer_email: customerEmail,
           customer_name: customerName,
+          customer_phone: customerPhone, // ✅ required by Cashfree
         },
       },
       {
