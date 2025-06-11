@@ -2,6 +2,7 @@
 const express = require("express");
 const axios = require("axios");
 const router = express.Router();
+const dotenv = require("dotenv").config();
 
 const APP_ID = process.env.CASHFREE_APP_ID;
 const SECRET_KEY = process.env.CASHFREE_SECRET_KEY;
