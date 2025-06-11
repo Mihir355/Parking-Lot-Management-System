@@ -2,7 +2,8 @@
 const express = require("express");
 const axios = require("axios");
 const router = express.Router();
-const dotenv = require("dotenv").config();
+const dotenv = require("dotenv");
+dotenv.config();
 
 const APP_ID = process.env.CASHFREE_APP_ID;
 const SECRET_KEY = process.env.CASHFREE_SECRET_KEY;
@@ -10,6 +11,9 @@ const BASE_URL = process.env.CASHFREE_BASE_URL;
 
 router.post("/create-order", async (req, res) => {
   const { orderId, orderAmount, customerName, customerEmail } = req.body;
+
+  // ✅ Sanitize customer_id to remove invalid characters
+  const sanitizedCustomerId = customerEmail.replace(/[^a-zA-Z0-9_-]/g, "_");
 
   try {
     const response = await axios.post(
@@ -19,7 +23,7 @@ router.post("/create-order", async (req, res) => {
         order_amount: orderAmount,
         order_currency: "INR",
         customer_details: {
-          customer_id: customerEmail,
+          customer_id: sanitizedCustomerId, // ✅ use the sanitized ID
           customer_email: customerEmail,
           customer_name: customerName,
         },
