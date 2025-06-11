@@ -25,7 +25,7 @@ const Homepage = () => {
     let timeout;
     if (!window.CFPayment) {
       const script = document.createElement("script");
-      script.src = "https://sdk.cashfree.com/js/ui/2.0.0/cashfree.prod.js";
+      script.src = "https://sdk.cashfree.com/js/v3/cashfree.js";
       script.async = true;
 
       script.onload = () => {
