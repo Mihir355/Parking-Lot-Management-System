@@ -28,6 +28,46 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+router.post("/complete-checkout", async (req, res) => {
+  const { email, lotId } = req.body;
+  const key = `${email}_${lotId}`;
+  const otpEntry = otpStore[key];
+
+  if (!otpEntry || otpEntry.used || Date.now() > otpEntry.expiresAt) {
+    return res
+      .status(400)
+      .json({ success: false, message: "Invalid or expired OTP session." });
+  }
+
+  try {
+    const ticket = await TicketModel.findOne({
+      email,
+      lotId,
+      endTime: { $exists: false },
+    });
+
+    if (!ticket) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Active ticket not found." });
+    }
+
+    ticket.endTime = new Date();
+    await ticket.save();
+
+    await LotModel.findByIdAndUpdate(lotId, { isAvailable: true });
+
+    otpEntry.used = true;
+
+    return res.json({ success: true, message: "Checkout completed." });
+  } catch (error) {
+    console.error("Error completing checkout:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Server error during checkout." });
+  }
+});
+
 router.post("/send-otp", otpLimiter, async (req, res) => {
   const { email, lotId } = req.body;
 
@@ -116,14 +156,9 @@ router.post("/verify-otp", async (req, res) => {
   }
 
   const startTime = ticket.startTime;
-  const endTime = new Date();
-  const durationInHours = Math.ceil((endTime - startTime) / (1000 * 60 * 60));
+  const now = new Date();
+  const durationInHours = Math.ceil((now - startTime) / (1000 * 60 * 60));
   const totalCost = durationInHours * price.price;
-
-  otpEntry.used = true;
-
-  ticket.endTime = endTime;
-  await ticket.save();
 
   return res.json({
     success: true,

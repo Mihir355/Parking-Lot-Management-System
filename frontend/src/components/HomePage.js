@@ -167,13 +167,19 @@ const Homepage = () => {
           alert("✅ Payment Successful!");
 
           try {
-            await axios.patch(
-              `https://parking-lot-management-system-xf6h.onrender.com/api/lots/mark-available/${lotId}`
+            await axios.post(
+              "https://parking-lot-management-system-xf6h.onrender.com/api/otp/complete-checkout",
+              {
+                email,
+                lotId,
+              }
             );
-            console.log("Lot availability updated.");
+            console.log("Checkout completed. Ticket closed and lot freed.");
           } catch (error) {
-            console.error("Failed to update lot availability:", error);
-            alert("Lot status update failed. Please contact support.");
+            console.error("Failed to complete checkout:", error);
+            alert(
+              "Checkout completed, but status update failed. Contact support."
+            );
           }
 
           // Reset form state
