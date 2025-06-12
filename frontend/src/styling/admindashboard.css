@@ -151,3 +151,14 @@ code {
     display: block;
   }
 }
+
+.qr-button-group {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.qr-button-group button {
+  min-width: 120px;
+}

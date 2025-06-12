@@ -264,10 +264,10 @@ const AdminDashboard = () => {
               id={qrCodeRegionId}
               style={{ width: "300px", margin: "0 auto" }}
             ></div>
-            <button onClick={startQRScanner}>Start Scanner</button>
-            <button onClick={stopQRScanner} style={{ marginLeft: "10px" }}>
-              Stop Scanner
-            </button>
+            <div className="qr-button-group">
+              <button onClick={startQRScanner}>Start Scanner</button>
+              <button onClick={stopQRScanner}>Stop Scanner</button>
+            </div>
             <p>
               <strong>Status:</strong> {qrStatus}
             </p>
