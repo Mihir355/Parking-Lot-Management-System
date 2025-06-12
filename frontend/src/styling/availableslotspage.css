@@ -1,130 +1,177 @@
+/* availableslotspage.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
 .available-slots-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  max-width: 800px;
+  margin: 40px auto;
   padding: 30px;
-  font-family: Arial, sans-serif;
-  background-color: #f8f9fa;
+  font-family: 'Inter', sans-serif;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
 }
 
 .available-slots-container h2 {
-  font-size: 26px;
-  color: #333;
-  margin-bottom: 25px;
+  text-align: center;
+  color: #2d3748;
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .slot-list {
-  list-style-type: none;
+  list-style: none;
   padding: 0;
-  width: 100%;
-  max-width: 550px;
+  margin: 0 0 40px 0;
 }
 
 .slot-list li {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 18px;
-  margin-bottom: 12px;
-  background-color: #ffffff;
-  border: 1px solid #ddd;
+  background: #f8f9fa;
   border-radius: 10px;
-  color: #555;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.3s ease;
+  padding: 15px 20px;
+  margin-bottom: 15px;
+  border-left: 4px solid #4c6ef5;
+  transition: all 0.3s ease;
 }
 
 .slot-list li:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.15);
+  transform: translateX(5px);
+  background: #edf2ff;
 }
 
-.slot-list button {
-  background-color: #4caf50;
-  color: #fff;
+.slot-list li:last-child {
+  margin-bottom: 0;
+}
+
+.slot-list li button {
+  background: #4c6ef5;
+  color: white;
   border: none;
-  padding: 8px 14px;
-  border-radius: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background 0.3s ease;
 }
 
-.slot-list button:hover {
-  background-color: #45a049;
+.slot-list li button:hover {
+  background: #3b5bdb;
 }
 
 .booking-form {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 25px;
   margin-top: 25px;
-  padding: 20px;
-  background-color: #ffffff;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  width: 100%;
-  max-width: 550px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 }
 
 .booking-form h3 {
-  color: #333;
-  margin-bottom: 12px;
-  font-size: 1.1rem;
+  font-size: 20px;
+  font-weight: 500;
+  margin-bottom: 20px;
+  color: #2d3748;
+  text-align: center;
 }
 
-.booking-form input[type="email"] {
-  padding: 12px;
-  margin-bottom: 15px;
+.booking-form input {
   width: 100%;
-  max-width: 320px;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: border-color 0.3s ease;
-}
-
-.booking-form input[type="email"]:focus {
-  border-color: #2196f3;
+  padding: 14px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 16px;
+  margin-bottom: 18px;
+  transition: all 0.3s ease;
   outline: none;
 }
 
-.booking-form button {
-  background-color: #2196f3;
-  color: #fff;
-  border: none;
-  padding: 10px 18px;
-  margin-top: 8px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+.booking-form input:focus {
+  border-color: #4c6ef5;
+  box-shadow: 0 0 0 3px rgba(76, 110, 245, 0.1);
 }
 
-.booking-form button:hover {
-  background-color: #1976d2;
+.booking-form button[type="submit"] {
+  background: #4c6ef5;
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.booking-form button[type="submit"]:hover {
+  background: #3b5bdb;
 }
 
 .cancel-button {
-  background-color: #f44336;
-  color: #fff;
-  margin-top: 5px;
+  background: #f8f9fa !important;
+  color: #4c6ef5 !important;
+  border: 1px solid #e2e8f0 !important;
 }
 
 .cancel-button:hover {
-  background-color: #d32f2f;
+  background: #e9ecef !important;
+  color: #3b5bdb !important;
 }
 
 .go-back-button {
-  margin-top: 25px;
-  padding: 10px 20px;
-  color: #fff;
-  background-color: #f44336;
-  border: none;
-  border-radius: 6px;
+  display: block;
+  width: 200px;
+  margin: 30px auto 0;
+  background: transparent;
+  color: #4c6ef5;
+  border: 1px solid #e2e8f0;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
 }
 
 .go-back-button:hover {
-  background-color: #d32f2f;
+  background: #f8f9fa;
+  color: #3b5bdb;
+}
+
+/* Empty state styling */
+.slot-list > p {
+  text-align: center;
+  padding: 30px;
+  background: #f8f9fa;
+  border-radius: 10px;
+  color: #64748b;
+  font-style: italic;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .available-slots-container {
+    padding: 20px;
+    margin: 20px;
+  }
+  
+  .slot-list li {
+    flex-direction: column;
+    gap: 12px;
+    align-items: flex-start;
+  }
+  
+  .slot-list li button {
+    align-self: flex-end;
+  }
+  
+  .go-back-button {
+    width: 100%;
+  }
 }
