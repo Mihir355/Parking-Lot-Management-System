@@ -28,7 +28,7 @@ router.post("/create-order", async (req, res) => {
           customer_phone: customerPhone,
         },
         order_meta: {
-          return_url: `https://yourdomain.com/home?order_id=${orderId}&status={order_status}`,
+          return_url: `https://parking-lot-management-system-1.onrender.com/home?order_id=${orderId}&status={order_status}`,
         },
       },
       {
