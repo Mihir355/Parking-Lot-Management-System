@@ -1,103 +1,135 @@
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+/* adminloginpage.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
 
 .admin-login-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  max-width: 450px;
+  margin: 50px auto;
   padding: 40px;
-  border: 1px solid #dfe6e9;
-  border-radius: 8px;
-  background-color: #ffffff;
-  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
-  max-width: 400px;
-  margin: 60px auto;
-  gap: 20px;
-  font-family: Arial, sans-serif;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  font-family: 'Inter', sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+.admin-login-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 6px;
+  background: linear-gradient(90deg, #4c6ef5, #3b5bdb);
 }
 
 .admin-login-container h2 {
-  font-size: 28px;
-  color: #2c3e50;
-  margin-bottom: 10px;
   text-align: center;
+  color: #2d3748;
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .admin-login-container form {
   display: flex;
   flex-direction: column;
-  width: 100%;
-  gap: 15px; 
+  gap: 25px;
 }
 
-.admin-login-container form div {
-  margin-bottom: 15px;
+.admin-login-container form > div {
+  display: flex;
+  flex-direction: column;
 }
 
 .admin-login-container label {
-  display: block;
-  margin-bottom: 6px;
-  font-weight: 600;
-  color: #2d3436;
+  font-size: 14px;
+  font-weight: 500;
+  color: #4a5568;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+}
+
+.admin-login-container label::before {
+  content: '*';
+  color: #e53e3e;
+  margin-right: 4px;
 }
 
 .admin-login-container input {
-  width: 100%;
-  padding: 12px;
+  padding: 14px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
   font-size: 16px;
-  border: 1px solid #b2bec3;
-  border-radius: 4px;
-  transition: border-color 0.3s ease;
+  transition: all 0.3s ease;
+  outline: none;
 }
 
 .admin-login-container input:focus {
-  outline: none;
-  border-color: #3498db;
+  border-color: #4c6ef5;
+  box-shadow: 0 0 0 3px rgba(76, 110, 245, 0.1);
 }
 
-.admin-login-container button {
-  width: 100%;
-  padding: 12px;
-  font-size: 16px;
-  font-weight: bold;
-  background-color: #3498db;
-  color: #ffffff;
+.admin-login-container button[type="submit"] {
+  background: #4c6ef5;
+  color: white;
   border: none;
-  border-radius: 4px;
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 500;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.1s ease;
-}
-
-.admin-login-container button:hover {
-  background-color: #2980b9;
-}
-
-.admin-login-container button:active {
-  transform: scale(0.98);
-}
-
-.admin-login-container .back-button {
-  background-color: #7f8c8d;
+  transition: background 0.3s ease;
   margin-top: 10px;
 }
 
-.admin-login-container .back-button:hover {
-  background-color: #636e72;
+.admin-login-container button[type="submit"]:hover {
+  background: #3b5bdb;
 }
 
+.admin-login-container .go-back-button {
+  display: block;
+  width: 100%;
+  margin-top: 20px;
+  background: transparent;
+  color: #4c6ef5;
+  border: 1px solid #e2e8f0;
+  padding: 12px;
+  border-radius: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
 
-@media (max-width: 480px) {
+.admin-login-container .go-back-button:hover {
+  background: #f8f9fa;
+  color: #3b5bdb;
+}
+
+.admin-login-container .admin-icon {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.admin-login-container .admin-icon svg {
+  width: 60px;
+  height: 60px;
+  fill: #4c6ef5;
+  background: #edf2ff;
+  padding: 12px;
+  border-radius: 50%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
   .admin-login-container {
-    padding: 20px;
-    width: 90%;
-    margin: 40px auto;
+    padding: 30px 20px;
+    margin: 30px 20px;
   }
-
+  
   .admin-login-container h2 {
     font-size: 24px;
   }
