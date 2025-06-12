@@ -1,62 +1,52 @@
-/* adminloginpage.css */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
 
-.admin-login-container {
-  max-width: 450px;
-  margin: 50px auto;
-  padding: 40px;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
   font-family: 'Inter', sans-serif;
-  position: relative;
-  overflow: hidden;
 }
 
-.admin-login-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 6px;
-  background: linear-gradient(90deg, #4c6ef5, #3b5bdb);
+.admin-login-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%);
+  padding: 20px;
 }
 
 .admin-login-container h2 {
-  text-align: center;
   color: #2d3748;
   font-size: 28px;
-  font-weight: 600;
   margin-bottom: 30px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #e2e8f0;
+  font-weight: 600;
 }
 
 .admin-login-container form {
+  background-color: #fff;
+  padding: 40px 30px;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 400px;
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 18px;
 }
 
-.admin-login-container form > div {
+.admin-login-container form div {
   display: flex;
   flex-direction: column;
+  text-align: left;
 }
 
-.admin-login-container label {
-  font-size: 14px;
-  font-weight: 500;
-  color: #4a5568;
+.admin-login-container form label {
   margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-}
-
-.admin-login-container label::before {
-  content: '*';
-  color: #e53e3e;
-  margin-right: 4px;
+  color: #4a5568;
+  font-weight: 500;
+  font-size: 14px;
 }
 
 .admin-login-container input {
@@ -83,54 +73,24 @@
   font-weight: 500;
   cursor: pointer;
   transition: background 0.3s ease;
-  margin-top: 10px;
 }
 
 .admin-login-container button[type="submit"]:hover {
   background: #3b5bdb;
 }
 
-.admin-login-container .go-back-button {
-  display: block;
-  width: 100%;
-  margin-top: 20px;
+.admin-login-container button:not([type="submit"]) {
   background: transparent;
+  border: none;
   color: #4c6ef5;
-  border: 1px solid #e2e8f0;
-  padding: 12px;
-  border-radius: 10px;
-  font-weight: 500;
+  margin-top: 20px;
+  font-size: 14px;
   cursor: pointer;
-  transition: all 0.3s ease;
+  font-weight: 500;
+  transition: color 0.3s ease;
 }
 
-.admin-login-container .go-back-button:hover {
-  background: #f8f9fa;
+.admin-login-container button:not([type="submit"]):hover {
   color: #3b5bdb;
-}
-
-.admin-login-container .admin-icon {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.admin-login-container .admin-icon svg {
-  width: 60px;
-  height: 60px;
-  fill: #4c6ef5;
-  background: #edf2ff;
-  padding: 12px;
-  border-radius: 50%;
-}
-
-/* Responsive adjustments */
-@media (max-width: 600px) {
-  .admin-login-container {
-    padding: 30px 20px;
-    margin: 30px 20px;
-  }
-  
-  .admin-login-container h2 {
-    font-size: 24px;
-  }
+  text-decoration: underline;
 }
