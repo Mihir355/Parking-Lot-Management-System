@@ -45,19 +45,32 @@ const Homepage = () => {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const orderId = params.get("order_id");
-    const status = params.get("status");
 
-    if (orderId && status) {
-      if (status === "PAID") {
-        alert(`✅ Payment confirmed for Order ID: ${orderId}`);
-        setActiveTab("history");
-        fetchBookingHistory();
-      } else {
-        alert(`❌ Payment ${status.toLowerCase()} for Order ID: ${orderId}`);
-      }
+    if (orderId) {
+      axios
+        .get(
+          `https://parking-lot-management-system-xf6h.onrender.com/api/cashfree/check-order-status/${orderId}`
+        )
+        .then((res) => {
+          const realStatus = res.data.status;
 
-      // Clear query params from URL
-      window.history.replaceState({}, document.title, "/home");
+          if (realStatus === "PAID") {
+            alert(`✅ Payment confirmed for Order ID: ${orderId}`);
+            setActiveTab("history");
+            fetchBookingHistory();
+          } else {
+            alert(`❌ Payment failed for Order ID: ${orderId}`);
+          }
+
+          window.history.replaceState({}, document.title, "/home");
+        })
+        .catch((err) => {
+          console.error("Error verifying order:", err);
+          alert(
+            "⚠️ Could not verify payment status. Please check history or contact support."
+          );
+          window.history.replaceState({}, document.title, "/home");
+        });
     }
   }, [location]);
 
