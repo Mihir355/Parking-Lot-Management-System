@@ -9,10 +9,9 @@ const rateLimit = require("express-rate-limit");
 
 const otpStore = {};
 
-// ✅ Rate Limiting (by IP — default behavior)
 const otpLimiter = rateLimit({
-  windowMs: 10 * 60 * 1000, // 15 minutes
-  max: 5, // Max 3 requests per window per IP
+  windowMs: 10 * 60 * 1000,
+  max: 5,
   message: {
     success: false,
     message: "Too many OTP requests. Please try again after 15 minutes.",
@@ -21,7 +20,6 @@ const otpLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Email transporter configuration
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -30,7 +28,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// ✅ Apply the rate limiter middleware to OTP route
 router.post("/send-otp", otpLimiter, async (req, res) => {
   const { email, lotId } = req.body;
 
@@ -59,7 +56,7 @@ router.post("/send-otp", otpLimiter, async (req, res) => {
 
     otpStore[`${email}_${lotId}`] = {
       otp,
-      expiresAt: Date.now() + 5 * 60 * 1000, // 5-minute expiry
+      expiresAt: Date.now() + 5 * 60 * 1000,
       used: false,
     };
 
@@ -120,15 +117,13 @@ router.post("/verify-otp", async (req, res) => {
 
   const startTime = ticket.startTime;
   const endTime = new Date();
-  ticket.endTime = endTime;
   const durationInHours = Math.ceil((endTime - startTime) / (1000 * 60 * 60));
   const totalCost = durationInHours * price.price;
 
-  await LotModel.updateOne({ lotId }, { availabilityStatus: "available" });
-
-  await ticket.save();
-
   otpEntry.used = true;
+
+  ticket.endTime = endTime;
+  await ticket.save();
 
   return res.json({
     success: true,

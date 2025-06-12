@@ -25,46 +25,45 @@ const Homepage = () => {
   const userId = localStorage.getItem("userId");
   const userName = localStorage.getItem("userName");
 
-  // ✅ Load Cashfree SDK on mount (only once)
   useEffect(() => {
-    const initCashfree = async () => {
-      if (window.cfInstance) {
-        console.log("⚠️ Cashfree SDK already loaded");
-        setIsCFReady(true);
-        return;
+    const params = new URLSearchParams(location.search);
+    const orderId = params.get("order_id");
+    const status = params.get("status");
+
+    if (orderId && status) {
+      if (status === "PAID") {
+        alert(`✅ Payment confirmed for Order ID: ${orderId}`);
+        setActiveTab("history");
+        fetchBookingHistory();
+      } else {
+        alert(`❌ Payment ${status.toLowerCase()} for Order ID: ${orderId}`);
       }
 
-      try {
-        const cfInstance = await load({ mode: "sandbox" }); // change to "production" when live
-        if (cfInstance) {
-          window.cfInstance = cfInstance;
-          setIsCFReady(true);
-          console.log("✅ Cashfree SDK loaded");
-        }
-      } catch (err) {
-        console.error("❌ Failed to load Cashfree SDK:", err);
-      }
-    };
-
-    initCashfree();
-  }, []);
+      // Clear query params from URL
+      window.history.replaceState({}, document.title, "/home");
+    }
+  }, [location]);
 
   // ✅ Handle return from Cashfree with order_id param
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const orderId = params.get("order_id");
+    const status = params.get("status");
 
-    if (orderId) {
-      alert(`✅ Payment confirmed for Order ID: ${orderId}`);
-      setActiveTab("history");
-      fetchBookingHistory();
+    if (orderId && status) {
+      if (status === "PAID") {
+        alert(`✅ Payment confirmed for Order ID: ${orderId}`);
+        setActiveTab("history");
+        fetchBookingHistory();
+      } else {
+        alert(`❌ Payment ${status.toLowerCase()} for Order ID: ${orderId}`);
+      }
 
-      // Clean up URL
+      // Clear query params from URL
       window.history.replaceState({}, document.title, "/home");
     }
   }, [location]);
 
-  // Fetch booking history when tab is active
   useEffect(() => {
     if (activeTab === "history") {
       fetchBookingHistory();
@@ -166,11 +165,21 @@ const Homepage = () => {
       window.cfInstance.checkout({
         paymentSessionId: payment_session_id,
         redirectTarget: "_self",
-        onSuccess: (data) => {
+        onSuccess: async (data) => {
           console.log("✅ Payment Success:", data);
           alert("✅ Payment Successful!");
 
-          // Reset form
+          try {
+            await axios.patch(
+              `https://parking-lot-management-system-xf6h.onrender.com/api/lots/mark-available/${lotId}`
+            );
+            console.log("Lot availability updated.");
+          } catch (error) {
+            console.error("Failed to update lot availability:", error);
+            alert("Lot status update failed. Please contact support.");
+          }
+
+          // Reset form state
           setOtp("");
           setOtpSent(false);
           setCheckoutReady(false);
