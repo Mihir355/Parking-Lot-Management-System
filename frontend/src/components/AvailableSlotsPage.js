@@ -98,14 +98,18 @@ const AvailableSlotsPage = () => {
             onChange={handleEmailChange}
             required
           />
-          <button type="submit">Confirm Booking</button>
-          <button
-            type="button"
-            onClick={() => setIsBooking(false)}
-            className="cancel-button"
-          >
-            Cancel
-          </button>
+          <div className="booking-form-buttons">
+            <button type="submit" className="booking-confirm-button">
+              Confirm Booking
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsBooking(false)}
+              className="booking-cancel-button"
+            >
+              Cancel
+            </button>
+          </div>
         </form>
       )}
 

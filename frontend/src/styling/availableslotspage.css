@@ -96,7 +96,13 @@
   box-shadow: 0 0 0 3px rgba(76, 110, 245, 0.1);
 }
 
-.booking-form button[type="submit"] {
+.booking-form-buttons {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.booking-confirm-button {
   background: #4c6ef5;
   color: white;
   border: none;
@@ -106,25 +112,30 @@
   font-weight: 500;
   cursor: pointer;
   transition: background 0.3s ease;
-  width: 100%;
-  margin-bottom: 12px;
+  flex: 1;
 }
 
-.booking-form button[type="submit"]:hover {
+.booking-confirm-button:hover {
   background: #3b5bdb;
 }
 
-.cancel-button {
-  background: #f8f9fa !important;
-  color: #4c6ef5 !important;
-  border: 1px solid #e2e8f0 !important;
+.booking-cancel-button {
+  background: #f8f9fa;
+  color: #4c6ef5;
+  border: 1px solid #e2e8f0;
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  flex: 1;
 }
 
-.cancel-button:hover {
-  background: #e9ecef !important;
-  color: #3b5bdb !important;
+.booking-cancel-button:hover {
+  background: #e9ecef;
+  color: #3b5bdb;
 }
-
 .go-back-button {
   display: block;
   width: 200px;
