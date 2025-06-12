@@ -19,6 +19,8 @@ const Homepage = () => {
   const [history, setHistory] = useState([]);
   const [phone, setPhone] = useState("");
   const [isCFReady, setIsCFReady] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
 
   const userId = localStorage.getItem("userId");
   const userName = localStorage.getItem("userName");
@@ -74,12 +76,14 @@ const Homepage = () => {
     navigate("/");
   };
 
-  const fetchBookingHistory = async () => {
+  const fetchBookingHistory = async (page = 1) => {
     try {
       const res = await axios.get(
-        `https://parking-lot-management-system-xf6h.onrender.com/api/bookings/user/${userId}`
+        `https://parking-lot-management-system-xf6h.onrender.com/api/bookings/user/${userId}?page=${page}&limit=5`
       );
       setHistory(res.data.bookings || []);
+      setCurrentPage(res.data.currentPage);
+      setTotalPages(res.data.totalPages);
     } catch (err) {
       console.error("Error fetching booking history", err);
       alert("Unable to fetch booking history. Try again later.");
@@ -300,15 +304,34 @@ const Homepage = () => {
             {history.length === 0 ? (
               <p>No bookings found.</p>
             ) : (
-              <ul className="booking-list">
-                {history.map((item) => (
-                  <li key={item._id}>
-                    Slot: {item.lotId} | Vehicle: {item.vehicleType} | Date:{" "}
-                    {new Date(item.startTime).toLocaleString()} | Status:{" "}
-                    {item.status}
-                  </li>
-                ))}
-              </ul>
+              <>
+                <ul className="booking-list">
+                  {history.map((item) => (
+                    <li key={item._id}>
+                      Slot: {item.lotId} | Vehicle: {item.vehicleType} | Date:{" "}
+                      {new Date(item.startTime).toLocaleString()} | Status:{" "}
+                      {item.status}
+                    </li>
+                  ))}
+                </ul>
+                <div className="pagination-controls">
+                  <button
+                    onClick={() => fetchBookingHistory(currentPage - 1)}
+                    disabled={currentPage <= 1}
+                  >
+                    Prev
+                  </button>
+                  <span>
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <button
+                    onClick={() => fetchBookingHistory(currentPage + 1)}
+                    disabled={currentPage >= totalPages}
+                  >
+                    Next
+                  </button>
+                </div>
+              </>
             )}
           </div>
         )}
