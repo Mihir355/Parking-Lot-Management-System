@@ -26,25 +26,22 @@ const Homepage = () => {
   const userName = localStorage.getItem("userName");
 
   useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const orderId = params.get("order_id");
-    const status = params.get("status");
-
-    if (orderId && status) {
-      if (status === "PAID") {
-        alert(`✅ Payment confirmed for Order ID: ${orderId}`);
-        setActiveTab("history");
-        fetchBookingHistory();
-      } else {
-        alert(`❌ Payment ${status.toLowerCase()} for Order ID: ${orderId}`);
+    const initCashfree = async () => {
+      try {
+        const cf = await load({
+          mode: "sandbox", // or "production" based on your environment
+        });
+        window.cfInstance = cf;
+        setIsCFReady(true);
+      } catch (error) {
+        console.error("Failed to load Cashfree SDK:", error);
+        alert("Failed to initialize payment gateway.");
       }
+    };
 
-      // Clear query params from URL
-      window.history.replaceState({}, document.title, "/home");
-    }
-  }, [location]);
+    initCashfree();
+  }, []);
 
-  // ✅ Handle return from Cashfree with order_id param
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const orderId = params.get("order_id");
