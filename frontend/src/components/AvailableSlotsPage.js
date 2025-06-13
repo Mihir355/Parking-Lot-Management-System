@@ -16,6 +16,13 @@ const AvailableSlotsPage = () => {
   const location = useLocation();
   const vehicleType = location.state?.vehicleType;
 
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    if (!userId || !vehicleType) {
+      navigate("/"); // Redirect if not logged in or vehicleType is missing
+    }
+  }, []);
+
   // Fetch slots
   const fetchSlots = async () => {
     setLoading(true);

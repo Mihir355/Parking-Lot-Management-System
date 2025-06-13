@@ -30,6 +30,16 @@ const Homepage = () => {
   const userId = localStorage.getItem("userId");
   const userName = localStorage.getItem("userName");
 
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    const userName = localStorage.getItem("userName");
+    const userEmail = localStorage.getItem("userEmail");
+
+    if (!userId || !userName || !userEmail) {
+      navigate("/");
+    }
+  }, [navigate]);
+
   // ✅ Load Cashfree SDK
   useEffect(() => {
     const initCashfree = async () => {
