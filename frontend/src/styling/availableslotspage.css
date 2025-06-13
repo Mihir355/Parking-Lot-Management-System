@@ -11,6 +11,13 @@
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
 }
 
+.loading-message {
+  font-style: italic;
+  color: #555;
+  margin: 1rem 0;
+  text-align: center;
+}
+
 .available-slots-container h2 {
   text-align: center;
   color: #2d3748;

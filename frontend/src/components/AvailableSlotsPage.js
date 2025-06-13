@@ -4,10 +4,11 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { io } from "socket.io-client";
 import "../styling/availableslotspage.css";
 
-const socket = io("https://parking-lot-management-system-xf6h.onrender.com"); // ✅ Replace with your actual backend URL
+const socket = io("https://parking-lot-management-system-xf6h.onrender.com");
 
 const AvailableSlotsPage = () => {
   const [slots, setSlots] = useState([]);
+  const [loading, setLoading] = useState(true); // ✅ loading state
   const [bookingInfo, setBookingInfo] = useState({ lotId: "", email: "" });
   const [isBooking, setIsBooking] = useState(false);
   const formRef = useRef(null);
@@ -17,6 +18,7 @@ const AvailableSlotsPage = () => {
 
   // Fetch slots
   const fetchSlots = async () => {
+    setLoading(true);
     try {
       const response = await axios.get(
         `https://parking-lot-management-system-xf6h.onrender.com/api/user/available-slots/${vehicleType}`
@@ -25,6 +27,8 @@ const AvailableSlotsPage = () => {
     } catch (error) {
       console.error("Error fetching slots:", error);
       alert("Error fetching slots. Please try again later.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -39,7 +43,7 @@ const AvailableSlotsPage = () => {
         ({ lotId: bookedId, vehicleType: bookedType }) => {
           if (bookedType === vehicleType) {
             console.log(`Slot ${bookedId} booked — refreshing slots`);
-            fetchSlots(); // Re-fetch when a relevant slot is booked
+            fetchSlots();
           }
         }
       );
@@ -89,18 +93,21 @@ const AvailableSlotsPage = () => {
   return (
     <div className="available-slots-container">
       <h2>Available Slots for {vehicleType}</h2>
-      <ul className="slot-list">
-        {slots.length > 0 ? (
-          slots.map((slot) => (
+
+      {loading ? (
+        <p className="loading-message">Loading available slots...</p>
+      ) : slots.length > 0 ? (
+        <ul className="slot-list">
+          {slots.map((slot) => (
             <li key={slot._id || slot.lotId}>
               Lot ID: {slot.lotId} - Status: {slot.availabilityStatus}
               <button onClick={() => handleBookSlot(slot.lotId)}>Book</button>
             </li>
-          ))
-        ) : (
-          <p>No available slots for this vehicle type.</p>
-        )}
-      </ul>
+          ))}
+        </ul>
+      ) : (
+        <p>No available slots for this vehicle type.</p>
+      )}
 
       {isBooking && (
         <form
