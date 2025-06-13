@@ -1,17 +1,16 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
 import { io } from "socket.io-client";
 import "../styling/availableslotspage.css";
 
+// Connect to Socket.IO server
 const socket = io("https://parking-lot-management-system-xf6h.onrender.com");
 
 const AvailableSlotsPage = () => {
   const [slots, setSlots] = useState([]);
-  const [loading, setLoading] = useState(true); // ✅ loading state
-  const [bookingInfo, setBookingInfo] = useState({ lotId: "", email: "" });
-  const [isBooking, setIsBooking] = useState(false);
-  const formRef = useRef(null);
+  const [loading, setLoading] = useState(true);
+
   const navigate = useNavigate();
   const location = useLocation();
   const vehicleType = location.state?.vehicleType;
@@ -21,9 +20,9 @@ const AvailableSlotsPage = () => {
     if (!userId || !vehicleType) {
       navigate("/"); // Redirect if not logged in or vehicleType is missing
     }
-  }, []);
+  }, [navigate, vehicleType]);
 
-  // Fetch slots
+  // Fetch available slots
   const fetchSlots = async () => {
     setLoading(true);
     try {
@@ -44,7 +43,6 @@ const AvailableSlotsPage = () => {
     if (vehicleType) {
       fetchSlots();
 
-      // Listen for real-time updates
       socket.on(
         "slotBooked",
         ({ lotId: bookedId, vehicleType: bookedType }) => {
@@ -61,39 +59,36 @@ const AvailableSlotsPage = () => {
     }
   }, [vehicleType]);
 
-  const handleBookSlot = (lotId) => {
-    setBookingInfo({ ...bookingInfo, lotId });
-    setIsBooking(true);
-    setTimeout(() => {
-      if (formRef.current) {
-        formRef.current.scrollIntoView({ behavior: "smooth" });
+  // Handle booking
+  const handleBookSlot = async (lotId) => {
+    const email = localStorage.getItem("userEmail");
+
+    if (!email) {
+      alert("Email not found. Please log in again.");
+      navigate("/");
+      return;
+    }
+
+    const confirmBooking = window.confirm(
+      `Do you want to book Lot ${lotId} using your registered email (${email})?`
+    );
+
+    if (confirmBooking) {
+      try {
+        await axios.post(
+          "https://parking-lot-management-system-xf6h.onrender.com/api/user/book-slot",
+          {
+            lotId,
+            email,
+            vehicleType,
+          }
+        );
+        alert(`Slot ${lotId} booked successfully for ${email}!`);
+        navigate("/home");
+      } catch (error) {
+        console.error("Error booking slot:", error);
+        alert("Failed to book slot. Please try again.");
       }
-    }, 100);
-  };
-
-  const handleEmailChange = (e) => {
-    setBookingInfo({ ...bookingInfo, email: e.target.value });
-  };
-
-  const handleSubmitBooking = async (e) => {
-    e.preventDefault();
-    const { lotId, email } = bookingInfo;
-
-    try {
-      await axios.post(
-        "https://parking-lot-management-system-xf6h.onrender.com/api/user/book-slot",
-        {
-          lotId,
-          email,
-          vehicleType,
-        }
-      );
-      alert(`Slot ${lotId} booked successfully for email ${email}!`);
-      setIsBooking(false);
-      navigate("/home");
-    } catch (error) {
-      console.error("Error booking slot:", error);
-      alert("Failed to book slot. Please try again.");
     }
   };
 
@@ -114,35 +109,6 @@ const AvailableSlotsPage = () => {
         </ul>
       ) : (
         <p>No available slots for this vehicle type.</p>
-      )}
-
-      {isBooking && (
-        <form
-          ref={formRef}
-          className="booking-form"
-          onSubmit={handleSubmitBooking}
-        >
-          <h3>Enter your email ID to book the lot:</h3>
-          <input
-            type="email"
-            placeholder="Email ID"
-            value={bookingInfo.email}
-            onChange={handleEmailChange}
-            required
-          />
-          <div className="booking-form-buttons">
-            <button type="submit" className="booking-confirm-button">
-              Confirm Booking
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsBooking(false)}
-              className="booking-cancel-button"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
       )}
 
       <button
