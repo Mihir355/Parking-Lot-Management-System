@@ -330,6 +330,7 @@ const Homepage = () => {
                 />
                 {!isCFReady && <p>Loading payment gateway...</p>}
                 <button
+                  className="pay-button"
                   onClick={handlePayment}
                   disabled={
                     !isCFReady || phone.length !== 10 || !/^\d{10}$/.test(phone)
@@ -371,7 +372,6 @@ const Homepage = () => {
                     Page {currentPage} of {totalPages}
                   </span>
                   <button
-                    className="pay-button"
                     onClick={() => fetchBookingHistory(currentPage + 1)}
                     disabled={currentPage >= totalPages}
                   >
