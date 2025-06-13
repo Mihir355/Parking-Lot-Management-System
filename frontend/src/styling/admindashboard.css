@@ -215,3 +215,37 @@
 .change-rates-form button:hover:not(:disabled) {
   background-color: #2980b9;
 }
+
+.qr-button-group {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+  margin-top: 20px;
+}
+
+.qr-button-group button {
+  padding: 12px 20px;
+  font-size: 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.qr-button-group button:first-child {
+  background-color: #2ecc71; /* Green for "Start" */
+  color: #fff;
+}
+
+.qr-button-group button:first-child:hover {
+  background-color: #27ae60;
+}
+
+.qr-button-group button:last-child {
+  background-color: #e67e22; /* Orange for "Stop" */
+  color: #fff;
+}
+
+.qr-button-group button:last-child:hover {
+  background-color: #d35400;
+}
