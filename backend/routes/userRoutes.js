@@ -41,11 +41,9 @@ router.post("/book-slot", async (req, res) => {
     await newTicket.save();
 
     // Mark the lot as booked (optional: check if lot is already booked first)
-    await LotModel.findByIdAndUpdate(
-      { lotId },
-      {
-        availabilityStatus: "occupied",
-      }
+    await LotModel.findOneAndUpdate(
+      { lotId: lotId },
+      { $set: { availabilityStatus: "occupied" } }
     );
 
     // Generate QR code as a buffer
