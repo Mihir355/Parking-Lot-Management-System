@@ -77,6 +77,7 @@ router.post("/send-otp", otpLimiter, async (req, res) => {
     const user = await TicketModel.findOne({
       email,
       lotId,
+      endTime: { $exists: false },
     });
 
     if (!user) {
