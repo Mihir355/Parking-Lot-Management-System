@@ -9,6 +9,7 @@ const LandingPage = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false); // 👈 loading state
 
   const navigate = useNavigate();
 
@@ -33,6 +34,8 @@ const LandingPage = () => {
       return;
     }
 
+    setLoading(true); // 👈 Set loading to true when request starts
+
     try {
       if (isLogin) {
         const response = await axios.post(
@@ -42,7 +45,6 @@ const LandingPage = () => {
 
         const { user } = response.data;
 
-        // Store user data in localStorage
         localStorage.setItem("userId", user.id);
         localStorage.setItem("userName", user.name);
         localStorage.setItem("userEmail", user.email);
@@ -50,7 +52,7 @@ const LandingPage = () => {
         alert(`Welcome back, ${user.name}!`);
         navigate("/home");
       } else {
-        const signupResponse = await axios.post(
+        await axios.post(
           "https://parking-lot-management-system-xf6h.onrender.com/api/auth/signup",
           { name, email, password }
         );
@@ -60,7 +62,12 @@ const LandingPage = () => {
       }
     } catch (err) {
       console.error("Authentication Error:", err);
-      alert("Something went wrong. Please try again later.");
+      alert(
+        err.response?.data?.message ||
+          "Something went wrong. Please try again later."
+      );
+    } finally {
+      setLoading(false); // 👈 Reset loading once done
     }
   };
 
@@ -70,15 +77,13 @@ const LandingPage = () => {
         <h2>{isLogin ? "Login" : "Sign Up"}</h2>
         <form onSubmit={handleSubmit} className="auth-form">
           {!isLogin && (
-            <>
-              <input
-                type="text"
-                placeholder="Full Name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </>
+            <input
+              type="text"
+              placeholder="Full Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
           )}
           <input
             type="email"
@@ -103,9 +108,21 @@ const LandingPage = () => {
               required
             />
           )}
-          <button type="submit">{isLogin ? "Login" : "Sign Up"}</button>
+          <button type="submit" disabled={loading}>
+            {loading
+              ? isLogin
+                ? "Logging in..."
+                : "Signing up..."
+              : isLogin
+              ? "Login"
+              : "Sign Up"}
+          </button>
         </form>
-        <button onClick={toggleForm} className="toggle-button">
+        <button
+          onClick={toggleForm}
+          className="toggle-button"
+          disabled={loading}
+        >
           {isLogin
             ? "Don't have an account? Sign Up"
             : "Already have an account? Login"}

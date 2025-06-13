@@ -8,6 +8,13 @@
   font-family: 'Inter', sans-serif;
 }
 
+/* In your landingpage.css */
+button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+
 .homepage-container {
   display: flex;
   justify-content: center;
