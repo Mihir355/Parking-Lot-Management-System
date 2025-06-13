@@ -55,7 +55,7 @@ router.post("/complete-checkout", async (req, res) => {
     ticket.endTime = new Date();
     await ticket.save();
 
-    await LotModel.findByIdAndUpdate(lotId, { isAvailable: true });
+    await LotModel.findByIdAndUpdate(lotId, { availabilityStatus: true });
 
     otpEntry.used = true;
 
