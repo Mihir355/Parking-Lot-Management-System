@@ -1,35 +1,53 @@
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { useNavigate, useLocation } from "react-router-dom";
+import { io } from "socket.io-client";
 import "../styling/availableslotspage.css";
+
+const socket = io("https://parking-lot-management-system-xf6h.onrender.com"); // ✅ Replace with your actual backend URL
 
 const AvailableSlotsPage = () => {
   const [slots, setSlots] = useState([]);
-  const [bookingInfo, setBookingInfo] = useState({
-    lotId: "",
-    email: "",
-  });
+  const [bookingInfo, setBookingInfo] = useState({ lotId: "", email: "" });
   const [isBooking, setIsBooking] = useState(false);
-  const formRef = useRef(null); // ✅ Form reference for scrolling
+  const formRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
   const vehicleType = location.state?.vehicleType;
 
+  // Fetch slots
+  const fetchSlots = async () => {
+    try {
+      const response = await axios.get(
+        `https://parking-lot-management-system-xf6h.onrender.com/api/user/available-slots/${vehicleType}`
+      );
+      setSlots(response.data);
+    } catch (error) {
+      console.error("Error fetching slots:", error);
+      alert("Error fetching slots. Please try again later.");
+    }
+  };
+
+  // Initial fetch and socket setup
   useEffect(() => {
-    const fetchSlots = async () => {
-      if (vehicleType) {
-        try {
-          const response = await axios.get(
-            `https://parking-lot-management-system-xf6h.onrender.com/api/user/available-slots/${vehicleType}`
-          );
-          setSlots(response.data);
-        } catch (error) {
-          console.error("Error fetching slots:", error);
-          alert("Error fetching slots. Please try again later.");
+    if (vehicleType) {
+      fetchSlots();
+
+      // Listen for real-time updates
+      socket.on(
+        "slotBooked",
+        ({ lotId: bookedId, vehicleType: bookedType }) => {
+          if (bookedType === vehicleType) {
+            console.log(`Slot ${bookedId} booked — refreshing slots`);
+            fetchSlots(); // Re-fetch when a relevant slot is booked
+          }
         }
-      }
-    };
-    fetchSlots();
+      );
+
+      return () => {
+        socket.off("slotBooked");
+      };
+    }
   }, [vehicleType]);
 
   const handleBookSlot = (lotId) => {
@@ -74,7 +92,7 @@ const AvailableSlotsPage = () => {
       <ul className="slot-list">
         {slots.length > 0 ? (
           slots.map((slot) => (
-            <li key={slot.lotId}>
+            <li key={slot._id || slot.lotId}>
               Lot ID: {slot.lotId} - Status: {slot.availabilityStatus}
               <button onClick={() => handleBookSlot(slot.lotId)}>Book</button>
             </li>
