@@ -21,6 +21,7 @@ const Homepage = () => {
   );
   const [activeTab, setActiveTab] = useState("book");
   const [history, setHistory] = useState([]);
+  const [isHistoryLoading, setIsHistoryLoading] = useState(false); // ✅ Add loading flag
   const [phone, setPhone] = useState("");
   const [isCFReady, setIsCFReady] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
@@ -119,6 +120,7 @@ const Homepage = () => {
   };
 
   const fetchBookingHistory = async (page = 1) => {
+    setIsHistoryLoading(true);
     try {
       const res = await axios.get(
         `https://parking-lot-management-system-xf6h.onrender.com/api/bookings/user/${userId}?page=${page}&limit=5`
@@ -129,6 +131,8 @@ const Homepage = () => {
     } catch (err) {
       console.error("Error fetching booking history", err);
       alert("Unable to fetch booking history.");
+    } finally {
+      setIsHistoryLoading(false); // ✅ Always reset loading at end
     }
   };
 
@@ -341,7 +345,9 @@ const Homepage = () => {
         {activeTab === "history" && (
           <div className="history-section">
             <h2>Booking History</h2>
-            {history.length === 0 ? (
+            {isHistoryLoading ? (
+              <p>Loading history...</p> // ✅ Show while loading
+            ) : history.length === 0 ? (
               <p>No bookings found.</p>
             ) : (
               <>
