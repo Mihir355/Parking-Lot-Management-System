@@ -28,9 +28,7 @@ const Homepage = () => {
   useEffect(() => {
     const initCashfree = async () => {
       try {
-        const cf = await load({
-          mode: "sandbox", // or "production" based on your environment
-        });
+        const cf = await load({ mode: "sandbox" });
         window.cfInstance = cf;
         setIsCFReady(true);
       } catch (error) {
@@ -42,35 +40,52 @@ const Homepage = () => {
     initCashfree();
   }, []);
 
+  // ✅ MODIFIED useEffect: Handles checkout after redirect
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const orderId = params.get("order_id");
 
     if (orderId) {
-      axios
-        .get(
-          `https://parking-lot-management-system-xf6h.onrender.com/api/cashfree/check-order-status/${orderId}`
-        )
-        .then((res) => {
+      (async () => {
+        try {
+          const res = await axios.get(
+            `https://parking-lot-management-system-xf6h.onrender.com/api/cashfree/check-order-status/${orderId}`
+          );
           const realStatus = res.data.status;
 
           if (realStatus === "PAID") {
             alert(`✅ Payment confirmed for Order ID: ${orderId}`);
+
+            try {
+              await axios.post(
+                "https://parking-lot-management-system-xf6h.onrender.com/api/otp/complete-checkout",
+                { email, lotId }
+              );
+              alert("✅ Checkout completed!");
+              setOtp("");
+              setOtpSent(false);
+              setCheckoutReady(false);
+              setLotId("");
+              setTotalCost(0);
+              setPhone("");
+            } catch (err) {
+              console.error("Checkout completion failed:", err);
+              alert("Payment was successful, but checkout failed.");
+            }
+
             setActiveTab("history");
             fetchBookingHistory();
           } else {
             alert(`❌ Payment failed for Order ID: ${orderId}`);
           }
-
-          window.history.replaceState({}, document.title, "/home");
-        })
-        .catch((err) => {
+        } catch (err) {
           console.error("Error verifying order:", err);
-          alert(
-            "⚠️ Could not verify payment status. Please check history or contact support."
-          );
-          window.history.replaceState({}, document.title, "/home");
-        });
+          alert("⚠️ Could not verify payment. Please check history.");
+        }
+
+        // ✅ Clean the URL
+        window.history.replaceState({}, document.title, "/home");
+      })();
     }
   }, [location]);
 
@@ -95,7 +110,7 @@ const Homepage = () => {
       setTotalPages(res.data.totalPages);
     } catch (err) {
       console.error("Error fetching booking history", err);
-      alert("Unable to fetch booking history. Try again later.");
+      alert("Unable to fetch booking history.");
     }
   };
 
@@ -144,6 +159,7 @@ const Homepage = () => {
     }
   };
 
+  // ✅ MODIFIED: Removed checkout API from onSuccess
   const handlePayment = async () => {
     if (!lotId || !email || !phone) {
       return alert("Please enter all required fields.");
@@ -175,34 +191,8 @@ const Homepage = () => {
       window.cfInstance.checkout({
         paymentSessionId: payment_session_id,
         redirectTarget: "_self",
-        onSuccess: async (data) => {
-          console.log("✅ Payment Success:", data);
-          alert("✅ Payment Successful!");
-
-          try {
-            console.log("entere try block");
-            await axios.post(
-              "https://parking-lot-management-system-xf6h.onrender.com/api/otp/complete-checkout",
-              {
-                email,
-                lotId,
-              }
-            );
-            console.log("Checkout completed. Ticket closed and lot freed.");
-          } catch (error) {
-            console.error("Failed to complete checkout:", error);
-            alert(
-              "Checkout completed, but status update failed. Contact support."
-            );
-          }
-
-          // Reset form state
-          setOtp("");
-          setOtpSent(false);
-          setCheckoutReady(false);
-          setLotId("");
-          setTotalCost(0);
-          setPhone("");
+        onSuccess: () => {
+          alert("✅ Payment Successful! Redirecting...");
         },
         onFailure: (err) => {
           console.error("❌ Payment Failed:", err);
