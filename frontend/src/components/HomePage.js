@@ -10,11 +10,15 @@ const Homepage = () => {
 
   const [vehicleType, setVehicleType] = useState("");
   const [email, setEmail] = useState(localStorage.getItem("userEmail") || "");
-  const [lotId, setLotId] = useState("");
+  const [lotId, setLotId] = useState(
+    localStorage.getItem("pendingLotId") || ""
+  );
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
   const [checkoutReady, setCheckoutReady] = useState(false);
-  const [totalCost, setTotalCost] = useState(0);
+  const [totalCost, setTotalCost] = useState(
+    parseFloat(localStorage.getItem("pendingTotalCost")) || 0
+  );
   const [activeTab, setActiveTab] = useState("book");
   const [history, setHistory] = useState([]);
   const [phone, setPhone] = useState("");
@@ -25,6 +29,7 @@ const Homepage = () => {
   const userId = localStorage.getItem("userId");
   const userName = localStorage.getItem("userName");
 
+  // ✅ Load Cashfree SDK
   useEffect(() => {
     const initCashfree = async () => {
       try {
@@ -40,7 +45,7 @@ const Homepage = () => {
     initCashfree();
   }, []);
 
-  // ✅ MODIFIED useEffect: Handles checkout after redirect
+  // ✅ Handle redirect after payment
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const orderId = params.get("order_id");
@@ -56,12 +61,25 @@ const Homepage = () => {
           if (realStatus === "PAID") {
             alert(`✅ Payment confirmed for Order ID: ${orderId}`);
 
+            const savedEmail = localStorage.getItem("userEmail");
+            const savedLotId = localStorage.getItem("pendingLotId");
+
+            if (!savedEmail || !savedLotId) {
+              alert("Missing email or Lot ID. Cannot complete checkout.");
+              return;
+            }
+
             try {
               await axios.post(
                 "https://parking-lot-management-system-xf6h.onrender.com/api/otp/complete-checkout",
-                { email, lotId }
+                { email: savedEmail, lotId: savedLotId }
               );
               alert("✅ Checkout completed!");
+
+              // Clear persisted data
+              localStorage.removeItem("pendingLotId");
+              localStorage.removeItem("pendingTotalCost");
+
               setOtp("");
               setOtpSent(false);
               setCheckoutReady(false);
@@ -148,6 +166,8 @@ const Homepage = () => {
       );
       if (res.data.success) {
         setTotalCost(res.data.totalCost);
+        localStorage.setItem("pendingLotId", lotId);
+        localStorage.setItem("pendingTotalCost", res.data.totalCost);
         setCheckoutReady(true);
         alert("OTP verified. Ready to checkout.");
       } else {
@@ -159,7 +179,6 @@ const Homepage = () => {
     }
   };
 
-  // ✅ MODIFIED: Removed checkout API from onSuccess
   const handlePayment = async () => {
     if (!lotId || !email || !phone) {
       return alert("Please enter all required fields.");
@@ -183,6 +202,11 @@ const Homepage = () => {
       if (!payment_session_id) {
         return alert("Failed to get payment session ID.");
       }
+
+      // ✅ Save to localStorage before redirect
+      localStorage.setItem("userEmail", email);
+      localStorage.setItem("pendingLotId", lotId);
+      localStorage.setItem("pendingTotalCost", totalCost);
 
       if (!window.cfInstance) {
         return alert("Cashfree SDK not loaded.");
