@@ -55,10 +55,12 @@ router.post("/complete-checkout", async (req, res) => {
     ticket.endTime = new Date();
     await ticket.save();
 
-    await LotModel.findByIdAndUpdate({ lotId }, { availabilityStatus: true });
+    await LotModel.findOneAndUpdate(
+      { lotId: lotId },
+      { $set: { availabilityStatus: "available" } }
+    );
 
     otpEntry.used = true;
-
     return res.json({ success: true, message: "Checkout completed." });
   } catch (error) {
     console.error("Error completing checkout:", error);
