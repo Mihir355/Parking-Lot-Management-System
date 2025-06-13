@@ -180,6 +180,7 @@ const Homepage = () => {
           alert("✅ Payment Successful!");
 
           try {
+            console.log("entere try block");
             await axios.post(
               "https://parking-lot-management-system-xf6h.onrender.com/api/otp/complete-checkout",
               {
