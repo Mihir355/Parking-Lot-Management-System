@@ -371,6 +371,7 @@ const Homepage = () => {
                     Page {currentPage} of {totalPages}
                   </span>
                   <button
+                    className="pay-button"
                     onClick={() => fetchBookingHistory(currentPage + 1)}
                     disabled={currentPage >= totalPages}
                   >

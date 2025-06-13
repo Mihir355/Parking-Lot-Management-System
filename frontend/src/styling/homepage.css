@@ -129,6 +129,23 @@
   background: #3b5bdb;
 }
 
+.pay-button{
+  background: #4c6ef5;
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.3s ease;
+  width: 100%;
+  margin-top: 10px;
+}
+.pay-button:hover{
+  background: #3b5bdb;
+}
+
 .form-section p {
   margin: 20px 0;
   text-align: center;
