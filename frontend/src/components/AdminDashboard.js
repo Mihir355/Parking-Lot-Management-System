@@ -52,7 +52,7 @@ const AdminDashboard = () => {
   const handleLogout = () => {
     localStorage.removeItem("isAdminAuthenticated");
     alert("You have been logged out.");
-    navigate("/adminlogin");
+    navigate("/adminLogin");
   };
 
   const handleAddSlots = async () => {
