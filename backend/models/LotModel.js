@@ -19,6 +19,8 @@ const LotSchema = new mongoose.Schema({
   },
 });
 
-LotSchema.index({ vehicleType: 1, lotId: 1 });
+// Indexes
+LotSchema.index({ lotId: 1 });
+LotSchema.index({ vehicleType: 1, availabilityStatus: 1 });
 
 module.exports = mongoose.model("Lot", LotSchema);
