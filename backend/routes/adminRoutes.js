@@ -7,11 +7,12 @@ const User = require("../models/UserModel");
 const dotenv = require("dotenv");
 dotenv.config();
 
+// ✅ Verify QR
 router.post("/verify-qr", async (req, res) => {
   const { token } = req.body;
 
   try {
-    const ticket = await Ticket.findOne({ token });
+    const ticket = await Ticket.findOne({ token }).lean();
     if (!ticket) {
       return res
         .status(404)
@@ -24,32 +25,25 @@ router.post("/verify-qr", async (req, res) => {
         .json({ success: false, message: "Ticket already used" });
     }
 
-    // Start timer
-    ticket.startTime = new Date();
-    await ticket.save();
+    const updates = [
+      Ticket.updateOne(
+        { _id: ticket._id },
+        { $set: { startTime: new Date() } }
+      ),
+      LotModel.updateOne(
+        { lotId: ticket.lotId },
+        { $set: { availabilityStatus: "occupied" } }
+      ),
+      User.updateOne(
+        {
+          email: ticket.email.toLowerCase().trim(),
+          bookings: { $ne: ticket._id },
+        },
+        { $push: { bookings: ticket._id } }
+      ),
+    ];
 
-    // Update lot status to "occupied"
-    await LotModel.findOneAndUpdate(
-      { lotId: ticket.lotId },
-      { availabilityStatus: "occupied" }
-    );
-
-    // Normalize and find user
-    const user = await User.findOne({
-      email: ticket.email.toLowerCase().trim(),
-    });
-
-    // Add ticket to user’s bookings
-    if (user) {
-      const isAlreadyBooked = user.bookings.some(
-        (bookingId) => bookingId.toString() === ticket._id.toString()
-      );
-
-      if (!isAlreadyBooked) {
-        user.bookings.push(ticket._id);
-        await user.save();
-      }
-    }
+    await Promise.all(updates);
 
     return res.json({
       success: true,
@@ -63,6 +57,7 @@ router.post("/verify-qr", async (req, res) => {
   }
 });
 
+// ✅ Admin login
 router.post("/login", (req, res) => {
   const { username, password } = req.body;
 
@@ -76,6 +71,7 @@ router.post("/login", (req, res) => {
   }
 });
 
+// ✅ Available slot counts per vehicle type
 router.get("/available-slots", async (req, res) => {
   try {
     const availableSlots = await LotModel.aggregate([
@@ -97,32 +93,29 @@ router.get("/available-slots", async (req, res) => {
   }
 });
 
+// ✅ Add slots
 router.post("/add-slots", async (req, res) => {
   const { vehicleType, slotCount } = req.body;
 
   try {
-    const existingSlots = await LotModel.find({ vehicleType });
+    // Only fetch lotId for computing max
+    const existing = await LotModel.find({ vehicleType })
+      .select("lotId")
+      .lean();
     const highestSlotID =
-      existingSlots.length > 0
-        ? Math.max(
-            ...existingSlots.map((slot) => parseInt(slot.lotId.slice(1)))
-          )
+      existing.length > 0
+        ? Math.max(...existing.map((slot) => parseInt(slot.lotId.slice(1))))
         : 0;
 
-    const newSlots = [];
-    for (let i = 1; i <= slotCount; i++) {
-      const newSlotID = `${vehicleType.charAt(0).toUpperCase()}${
-        highestSlotID + i
-      }`;
-      newSlots.push({
-        vehicleType,
-        lotId: newSlotID,
-        availabilityStatus: "available",
-      });
-    }
+    const newSlots = Array.from({ length: slotCount }, (_, i) => ({
+      vehicleType,
+      lotId: `${vehicleType.charAt(0).toUpperCase()}${highestSlotID + i + 1}`,
+      availabilityStatus: "available",
+    }));
 
     await LotModel.insertMany(newSlots);
 
+    // Get updated counts again
     const updatedSlots = await LotModel.aggregate([
       { $match: { availabilityStatus: "available" } },
       { $group: { _id: "$vehicleType", count: { $sum: 1 } } },
@@ -140,9 +133,10 @@ router.post("/add-slots", async (req, res) => {
   }
 });
 
+// ✅ Get current prices
 router.get("/prices", async (req, res) => {
   try {
-    const prices = await PriceModel.find({});
+    const prices = await PriceModel.find({}).lean();
     res.json(prices);
   } catch (error) {
     console.error("Error fetching prices:", error);
@@ -150,19 +144,24 @@ router.get("/prices", async (req, res) => {
   }
 });
 
+// ✅ Update prices (bulk)
 router.put("/update-prices", async (req, res) => {
   try {
     const updatedPrices = req.body;
 
-    for (const [vehicleType, price] of Object.entries(updatedPrices)) {
-      await PriceModel.findOneAndUpdate(
-        { vehicleType },
-        { price },
-        { new: true, upsert: true }
-      );
-    }
+    const operations = Object.entries(updatedPrices).map(
+      ([vehicleType, price]) => ({
+        updateOne: {
+          filter: { vehicleType },
+          update: { price },
+          upsert: true,
+        },
+      })
+    );
 
-    const prices = await PriceModel.find({});
+    await PriceModel.bulkWrite(operations);
+
+    const prices = await PriceModel.find({}).lean();
     res.json({ success: true, updatedPrices: prices });
   } catch (error) {
     console.error("Error updating prices:", error);
