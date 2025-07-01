@@ -4,12 +4,12 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { io } from "socket.io-client";
 import "../styling/availableslotspage.css";
 
-// Connect to Socket.IO server
 const socket = io("https://parking-lot-management-system-xf6h.onrender.com");
 
 const AvailableSlotsPage = () => {
   const [slots, setSlots] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedSlot, setSelectedSlot] = useState("");
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -18,11 +18,10 @@ const AvailableSlotsPage = () => {
   useEffect(() => {
     const userId = localStorage.getItem("userId");
     if (!userId || !vehicleType) {
-      navigate("/"); // Redirect if not logged in or vehicleType is missing
+      navigate("/");
     }
   }, [navigate, vehicleType]);
 
-  // Fetch available slots
   const fetchSlots = async () => {
     setLoading(true);
     try {
@@ -38,7 +37,6 @@ const AvailableSlotsPage = () => {
     }
   };
 
-  // Initial fetch and socket setup
   useEffect(() => {
     if (vehicleType) {
       fetchSlots();
@@ -59,8 +57,7 @@ const AvailableSlotsPage = () => {
     }
   }, [vehicleType]);
 
-  // Handle booking
-  const handleBookSlot = async (lotId) => {
+  const handleBookSlot = async () => {
     const email = localStorage.getItem("userEmail");
 
     if (!email) {
@@ -69,8 +66,13 @@ const AvailableSlotsPage = () => {
       return;
     }
 
+    if (!selectedSlot) {
+      alert("Please select a slot to book.");
+      return;
+    }
+
     const confirmBooking = window.confirm(
-      `Do you want to book Lot ${lotId} using your registered email (${email})?`
+      `Do you want to book Lot ${selectedSlot} using your registered email (${email})?`
     );
 
     if (confirmBooking) {
@@ -78,12 +80,12 @@ const AvailableSlotsPage = () => {
         await axios.post(
           "https://parking-lot-management-system-xf6h.onrender.com/api/user/book-slot",
           {
-            lotId,
+            lotId: selectedSlot,
             email,
             vehicleType,
           }
         );
-        alert(`Slot ${lotId} booked successfully for ${email}!`);
+        alert(`Slot ${selectedSlot} booked successfully for ${email}!`);
         navigate("/home");
       } catch (error) {
         console.error("Error booking slot:", error);
@@ -94,19 +96,33 @@ const AvailableSlotsPage = () => {
 
   return (
     <div className="available-slots-container">
-      <h2>Available Slots for {vehicleType}</h2>
+      <h2>Select an Available Slot for {vehicleType}</h2>
 
       {loading ? (
         <p className="loading-message">Loading available slots...</p>
       ) : slots.length > 0 ? (
-        <ul className="slot-list">
-          {slots.map((slot) => (
-            <li key={slot._id || slot.lotId}>
-              Lot ID: {slot.lotId} - Status: {slot.availabilityStatus}
-              <button onClick={() => handleBookSlot(slot.lotId)}>Book</button>
-            </li>
-          ))}
-        </ul>
+        <div className="dropdown-container">
+          <select
+            value={selectedSlot}
+            onChange={(e) => setSelectedSlot(e.target.value)}
+            className="slot-dropdown"
+          >
+            <option value="">-- Select a Lot ID --</option>
+            {slots.map((slot) => (
+              <option key={slot._id || slot.lotId} value={slot.lotId}>
+                Lot {slot.lotId}
+              </option>
+            ))}
+          </select>
+
+          <button
+            onClick={handleBookSlot}
+            className="booking-confirm-button"
+            disabled={!selectedSlot}
+          >
+            Book Selected Slot
+          </button>
+        </div>
       ) : (
         <p>No available slots for this vehicle type.</p>
       )}
