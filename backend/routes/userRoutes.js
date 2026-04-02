@@ -15,6 +15,7 @@ router.get("/available-slots/:vehicleType", async (req, res) => {
       vehicleType,
       availabilityStatus: "available",
     });
+
     res.json(availableSlots);
   } catch (error) {
     console.error("Error fetching available slots:", error);
@@ -25,13 +26,13 @@ router.get("/available-slots/:vehicleType", async (req, res) => {
 // Book a slot and emit real-time update
 router.post("/book-slot", async (req, res) => {
   const { vehicleType, email, lotId } = req.body;
-  const io = req.app.get("socketio"); // Access Socket.IO instance
+  const io = req.app.get("socketio");
 
   try {
-    // Generate a unique token
+    // Generate token
     const token = crypto.randomBytes(16).toString("hex");
 
-    // Create the ticket
+    // Save ticket
     const newTicket = new Ticket({
       vehicleType,
       email,
@@ -40,38 +41,44 @@ router.post("/book-slot", async (req, res) => {
     });
     await newTicket.save();
 
-    // Mark the lot as booked (optional: check if lot is already booked first)
+    // Update lot status
     await LotModel.findOneAndUpdate(
       { lotId: lotId },
-      { $set: { availabilityStatus: "occupied" } }
+      { $set: { availabilityStatus: "occupied" } },
     );
 
-    // Generate QR code as a buffer
+    // Generate QR code
     const qrCodeDataURL = await QRCode.toDataURL(token);
     const base64Data = qrCodeDataURL.split(",")[1];
     const qrBuffer = Buffer.from(base64Data, "base64");
 
-    // Send email with QR code
-    await sendMail({
-      to: email,
-      subject: "Your Parking Ticket QR Code",
-      html: `
-        <h2>Parking Ticket Confirmed</h2>
-        <p><strong>Vehicle Type:</strong> ${vehicleType}</p>
-        <p><strong>Lot ID:</strong> ${lotId}</p>
-        <p>Please present this QR code at the gate:</p>
-        <img src="cid:qrcode" alt="QR Code" />
-      `,
-      attachments: [
-        {
-          filename: "qrcode.png",
-          content: qrBuffer,
-          cid: "qrcode",
-        },
-      ],
-    });
+    // Convert to base64 for inline email image
+    const base64Image = qrBuffer.toString("base64");
 
-    // ✅ Emit socket event to notify all connected clients
+    // Send email (Resend-compatible)
+    try {
+      await sendMail({
+        to: email,
+        subject: "Your Parking Ticket QR Code",
+        html: `
+          <h2>Parking Ticket Confirmed</h2>
+          <p><strong>Vehicle Type:</strong> ${vehicleType}</p>
+          <p><strong>Lot ID:</strong> ${lotId}</p>
+          <p>Please present this QR code at the gate:</p>
+          <img src="data:image/png;base64,${base64Image}" alt="QR Code" />
+        `,
+        attachments: [
+          {
+            filename: "qrcode.png",
+            content: qrBuffer,
+          },
+        ],
+      });
+    } catch (err) {
+      console.error("Email failed:", err);
+    }
+
+    // Emit real-time update
     io.emit("slotBooked", { lotId, vehicleType });
 
     res.json({
@@ -80,7 +87,10 @@ router.post("/book-slot", async (req, res) => {
     });
   } catch (error) {
     console.error("Booking error:", error);
-    res.status(500).json({ success: false, message: "Booking failed." });
+    res.status(500).json({
+      success: false,
+      message: "Booking failed.",
+    });
   }
 });
 
