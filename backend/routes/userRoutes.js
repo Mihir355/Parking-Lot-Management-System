@@ -23,7 +23,7 @@ router.get("/available-slots/:vehicleType", async (req, res) => {
   }
 });
 
-// Book a slot and emit real-time update
+// Book a slot
 router.post("/book-slot", async (req, res) => {
   const { vehicleType, email, lotId } = req.body;
   const io = req.app.get("socketio");
@@ -51,11 +51,11 @@ router.post("/book-slot", async (req, res) => {
     const qrCodeDataURL = await QRCode.toDataURL(token);
     const base64Data = qrCodeDataURL.split(",")[1];
     const qrBuffer = Buffer.from(base64Data, "base64");
-
-    // Convert to base64 for inline email image
     const base64Image = qrBuffer.toString("base64");
 
-    // Send email (Resend-compatible)
+    // ✅ Send email safely
+    let emailSent = true;
+
     try {
       await sendMail({
         to: email,
@@ -74,19 +74,25 @@ router.post("/book-slot", async (req, res) => {
           },
         ],
       });
+
+      console.log("✅ Email sent to:", email);
     } catch (err) {
-      console.error("Email failed:", err);
+      emailSent = false;
+      console.error("❌ Email failed:", err.message || err);
     }
 
     // Emit real-time update
     io.emit("slotBooked", { lotId, vehicleType });
 
+    // ✅ Send accurate response
     res.json({
       success: true,
-      message: "Booking confirmed, QR sent to email.",
+      message: emailSent
+        ? "Booking confirmed, QR sent to email."
+        : "Booking confirmed, but email failed.",
     });
   } catch (error) {
-    console.error("Booking error:", error);
+    console.error("❌ Booking error:", error);
     res.status(500).json({
       success: false,
       message: "Booking failed.",

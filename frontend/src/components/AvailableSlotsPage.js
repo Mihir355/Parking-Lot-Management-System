@@ -26,7 +26,7 @@ const AvailableSlotsPage = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `https://parking-lot-management-system-xf6h.onrender.com/api/user/available-slots/${vehicleType}`
+        `https://parking-lot-management-system-xf6h.onrender.com/api/user/available-slots/${vehicleType}`,
       );
       setSlots(response.data);
     } catch (error) {
@@ -48,7 +48,7 @@ const AvailableSlotsPage = () => {
             console.log(`Slot ${bookedId} booked — refreshing slots`);
             fetchSlots();
           }
-        }
+        },
       );
 
       return () => {
@@ -72,20 +72,23 @@ const AvailableSlotsPage = () => {
     }
 
     const confirmBooking = window.confirm(
-      `Do you want to book Lot ${selectedSlot} using your registered email (${email})?`
+      `Do you want to book Lot ${selectedSlot} using your registered email (${email})?`,
     );
 
     if (confirmBooking) {
       try {
-        await axios.post(
+        const response = await axios.post(
           "https://parking-lot-management-system-xf6h.onrender.com/api/user/book-slot",
           {
             lotId: selectedSlot,
             email,
             vehicleType,
-          }
+          },
         );
-        alert(`Slot ${selectedSlot} booked successfully for ${email}!`);
+
+        // Show backend message (important)
+        alert(response.data.message);
+
         navigate("/home");
       } catch (error) {
         console.error("Error booking slot:", error);
