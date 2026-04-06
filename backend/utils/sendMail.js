@@ -13,8 +13,7 @@ const sendMail = async ({ to, subject, html, attachments = [] }) => {
     // Send email via Resend
     const response = await resend.emails.send({
       // ⚠️ IMPORTANT: Use Resend's default sender OR verified domain
-      from: "Parking App <onboarding@resend.dev>",
-
+      from: "onboarding@resend.dev",
       to,
       subject,
       html,
