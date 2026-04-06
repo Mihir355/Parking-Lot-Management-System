@@ -4,9 +4,9 @@ const dotenv = require("dotenv").config();
 const TicketModel = require("../models/TicketModel");
 const LotModel = require("../models/LotModel");
 const PriceModel = require("../models/PriceModel");
-const nodemailer = require("nodemailer");
 const rateLimit = require("express-rate-limit");
-
+const { Resend } = require("resend");
+const resend = new Resend(process.env.RESEND_API_KEY);
 const otpStore = {};
 
 const otpLimiter = rateLimit({
@@ -18,14 +18,6 @@ const otpLimiter = rateLimit({
   },
   standardHeaders: true,
   legacyHeaders: false,
-});
-
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD,
-  },
 });
 
 router.post("/complete-checkout", async (req, res) => {
@@ -57,7 +49,7 @@ router.post("/complete-checkout", async (req, res) => {
 
     await LotModel.findOneAndUpdate(
       { lotId: lotId },
-      { $set: { availabilityStatus: "available" } }
+      { $set: { availabilityStatus: "available" } },
     );
 
     otpEntry.used = true;
@@ -81,34 +73,48 @@ router.post("/send-otp", otpLimiter, async (req, res) => {
     });
 
     if (!user) {
-      return res
-        .status(404)
-        .json({ success: false, message: "User not found." });
+      return res.status(404).json({
+        success: false,
+        message: "User not found.",
+      });
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: "Your Parking Lot Checkout OTP",
-      text: `Your OTP for checkout is ${otp}`,
-    };
+    // ✅ Send OTP using Resend
+    try {
+      await resend.emails.send({
+        from: "onboarding@resend.dev", // ⚠️ test mode
+        to: email,
+        subject: "Your Parking Lot Checkout OTP",
+        html: `<p>Your OTP for checkout is <strong>${otp}</strong></p>`,
+      });
 
-    await transporter.sendMail(mailOptions);
+      console.log("✅ OTP email sent to:", email);
+    } catch (err) {
+      console.error("❌ OTP email failed:", err.message || err);
+      return res.status(500).json({
+        success: false,
+        message: "Failed to send OTP email.",
+      });
+    }
 
+    // Store OTP
     otpStore[`${email}_${lotId}`] = {
       otp,
       expiresAt: Date.now() + 5 * 60 * 1000,
       used: false,
     };
 
-    res.json({ success: true, message: "OTP sent to your email address." });
+    res.json({
+      success: true,
+      message: "OTP sent to your email address.",
+    });
   } catch (error) {
     console.error("Error sending OTP:", error);
     res.status(500).json({
       success: false,
-      message: "Failed to send OTP. Please try again.",
+      message: "Server error.",
     });
   }
 });

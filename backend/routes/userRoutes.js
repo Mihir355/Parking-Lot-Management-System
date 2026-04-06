@@ -65,7 +65,6 @@ router.post("/book-slot", async (req, res) => {
           <p><strong>Vehicle Type:</strong> ${vehicleType}</p>
           <p><strong>Lot ID:</strong> ${lotId}</p>
           <p>Please present this QR code at the gate:</p>
-          <img src="data:image/png;base64,${base64Image}" alt="QR Code" />
         `,
         attachments: [
           {
