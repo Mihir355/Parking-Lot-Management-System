@@ -28,8 +28,8 @@ router.post("/book-slot", async (req, res) => {
   const { vehicleType, email, lotId } = req.body;
   const io = req.app.get("socketio");
 
-  const session = await mongoose.startSession();
-  session.startTransaction();
+  // const session = await mongoose.startSession();
+  // session.startTransaction();
 
   try {
     // Step 1: Try to reserve the slot (atomic check)
@@ -40,8 +40,8 @@ router.post("/book-slot", async (req, res) => {
     );
 
     if (!lot) {
-      await session.abortTransaction();
-      session.endSession();
+      // await session.abortTransaction();
+      // session.endSession();
 
       return res.status(400).json({
         success: false,
