@@ -28,31 +28,26 @@ router.post("/book-slot", async (req, res) => {
   const { vehicleType, email, lotId } = req.body;
   const io = req.app.get("socketio");
 
-  // const session = await mongoose.startSession();
-  // session.startTransaction();
-
   try {
-    // Step 1: Try to reserve the slot (atomic check)
-    const lot = await LotModel.findOneAndUpdate(
-      { lotId: lotId, availabilityStatus: "available" },
+    // ✅ Step 1: Try to reserve slot atomically
+    const updatedLot = await LotModel.findOneAndUpdate(
+      { lotId: lotId, availabilityStatus: "available" }, // IMPORTANT
       { $set: { availabilityStatus: "occupied" } },
-      { new: true, session },
+      { new: true },
     );
 
-    if (!lot) {
-      // await session.abortTransaction();
-      // session.endSession();
-
+    // ❌ If no slot found → already booked
+    if (!updatedLot) {
       return res.status(400).json({
         success: false,
-        message: "Slot already booked by another user.",
+        message: "Slot already booked. Please select another.",
       });
     }
 
-    // Step 2: Generate token
+    // ✅ Step 2: Generate token
     const token = crypto.randomBytes(16).toString("hex");
 
-    // Step 3: Create ticket
+    // ✅ Step 3: Create ticket ONLY after slot is reserved
     const newTicket = new Ticket({
       vehicleType,
       email,
@@ -60,13 +55,9 @@ router.post("/book-slot", async (req, res) => {
       token,
     });
 
-    await newTicket.save({ session });
+    await newTicket.save();
 
-    // Step 4: Commit transaction
-    await session.commitTransaction();
-    session.endSession();
-
-    // Step 5: QR + Email (outside transaction)
+    // ✅ Step 4: Generate QR
     const qrCodeDataURL = await QRCode.toDataURL(token);
     const base64Data = qrCodeDataURL.split(",")[1];
     const qrBuffer = Buffer.from(base64Data, "base64");
@@ -77,7 +68,12 @@ router.post("/book-slot", async (req, res) => {
       await sendMail({
         to: email,
         subject: "Your Parking Ticket QR Code",
-        html: `<h2>Parking Ticket Confirmed</h2>`,
+        html: `
+          <h2>Parking Ticket Confirmed</h2>
+          <p><strong>Vehicle Type:</strong> ${vehicleType}</p>
+          <p><strong>Lot ID:</strong> ${lotId}</p>
+          <p>Please present this QR code at the gate:</p>
+        `,
         attachments: [
           {
             filename: "qrcode.png",
@@ -89,21 +85,17 @@ router.post("/book-slot", async (req, res) => {
       emailSent = false;
     }
 
-    // Step 6: Emit real-time update
+    // ✅ Step 5: Emit real-time update
     io.emit("slotBooked", { lotId, vehicleType });
 
     return res.json({
       success: true,
       message: emailSent
-        ? "Booking confirmed, QR sent."
-        : "Booking confirmed, email failed.",
+        ? "Booking confirmed, QR sent to email."
+        : "Booking confirmed, but email failed.",
     });
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
-
-    console.error("Transaction error:", error);
-
+    console.error("❌ Booking error:", error);
     return res.status(500).json({
       success: false,
       message: "Booking failed.",
